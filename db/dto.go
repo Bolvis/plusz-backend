@@ -1,8 +1,9 @@
 package db
 
 import (
-	"plusz-backend/util"
 	"strings"
+
+	"plusz-backend/util"
 )
 
 type Class struct {
@@ -28,19 +29,18 @@ type Schedule struct {
 
 func InsertClasses(classes []Class) error {
 	db, err := Connect()
+	defer db.Close()
+
 	if err != nil {
 		return err
 	}
 
-	query := "INSERT INTO public.class (id) VALUES "
-	vals := []interface{}{}
-	//INSERT INTO public.class (date, start_hour, end_hour, name, lecturer, "group", class_number)
-	//VALUES ('2024-12-13', '15:16:29', '18:16:00', 'test', 'test', 'test',
-	//	'test')
+	query := `INSERT INTO public.class (date, start_hour, end_hour, name, lecturer, group_number, class_number) VALUES `
+	var vals []interface{}
 
 	for _, v := range classes {
 		query += "(?::date,?::time,?::time,?::varchar,?::varchar,?::varchar,?::varchar),"
-		hours := strings.Split(v.Hour, "-")
+		hours := strings.Split(strings.Replace(v.Hour, ".", ":", 2), "-")
 		vals = append(vals, v.Date, hours[0], hours[1], v.Name, v.Lecturer, v.Group, v.ClassNumber)
 	}
 	query = strings.TrimSuffix(query, ",")
@@ -49,8 +49,6 @@ func InsertClasses(classes []Class) error {
 	if _, err := stmt.Exec(vals...); err != nil {
 		return err
 	}
-
-	defer db.Close()
 
 	return nil
 }
