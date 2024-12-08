@@ -1,25 +1,12 @@
 package main
 
-import (
-	"fmt"
-	"plusz-backend/scrapper"
-)
+import "plusz-backend/api"
 
 //TIP To run your code, right-click the code and select <b>Run</b>. Alternatively, click
 // the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.
 
 func main() {
-	scheduleRevision, err := scrapper.Scrap(
-		"https://efz.usz.edu.pl/wp-content/include-me/plany_mick/zajecia_xml.php?kierunek=IiE&rok=3z",
-	)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	fmt.Println(scheduleRevision.Date)
-	for _, class := range scheduleRevision.Classes {
-		fmt.Println(class)
-	}
+	api.Init()
 }
 
 //TIP See GoLand help at <a href="https://www.jetbrains.com/help/go/">jetbrains.com/help/go/</a>.
