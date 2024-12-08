@@ -8,9 +8,9 @@ import (
 func Init() {
 	router := gin.Default()
 
-	router.POST("/srcaped", service.GetSchedule)
+	router.POST("/addScheduleVersion", service.GetSchedule)
 
-	if err := router.Run("localhost:8080"); err != nil {
+	if err := router.Run(":8080"); err != nil {
 		panic(err)
 	}
 }

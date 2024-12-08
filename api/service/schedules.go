@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fmt"
+	"net/http"
 	"plusz-backend/scrapper"
 	"strings"
 
@@ -9,31 +9,30 @@ import (
 )
 
 type scheduleRequest struct {
-	year  string
-	field string
+	Year  string `json:"year"`
+	Field string `json:"field"`
 }
 
 func GetSchedule(c *gin.Context) {
 	var request scheduleRequest
 
 	if err := c.BindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	url := strings.Join([]string{
 		"https://efz.usz.edu.pl/wp-content/include-me/plany_mick/zajecia_xml.php?kierunek=",
-		request.field,
+		request.Field,
 		"&rok=",
-		request.year,
+		request.Year,
 	}, "")
 
 	scheduleRevision, err := scrapper.Scrap(url)
 	if err != nil {
-		fmt.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	fmt.Println(scheduleRevision.Date)
-	for _, class := range scheduleRevision.Classes {
-		fmt.Println(class)
-	}
+	c.JSON(http.StatusOK, scheduleRevision)
 }
