@@ -28,7 +28,7 @@ func GetSchedule(c *gin.Context) {
 		request.Year,
 	}, "")
 
-	scheduleRevision, err := scrapper.Scrap(url)
+	scheduleRevision, err := scrapper.ScrapUSZ(url)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
