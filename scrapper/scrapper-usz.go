@@ -2,10 +2,11 @@ package scrapper
 
 import (
 	"fmt"
-	"github.com/gocolly/colly"
 	"plusz-backend/db"
 	"plusz-backend/util"
 	"time"
+
+	"github.com/gocolly/colly"
 )
 
 var scheduleRevision db.ScheduleRevision
@@ -59,16 +60,14 @@ func onHTML(e *colly.HTMLElement) {
 	})
 
 	var class db.Class
-	if len(line) == 6 {
+	if len(line) == 6 && line[0] != "Data" {
 		class.Date = line[0]
 		class.Hour = line[1]
 		class.Name = line[2]
 		class.Lecturer = line[3]
 		class.Group = line[4]
 		class.ClassNumber = line[5]
-	}
 
-	if len(line) > 1 {
 		scheduleRevision.Classes = append(scheduleRevision.Classes, class)
 	}
 }
