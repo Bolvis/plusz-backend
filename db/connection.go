@@ -1,0 +1,30 @@
+package db
+
+import (
+	"database/sql"
+	"fmt"
+)
+
+const (
+	host     = "localhost"
+	port     = 5432
+	user     = "postgres"
+	password = "example"
+	dbname   = "plusz-db"
+)
+
+func Connect() (*sql.DB, error) {
+	psqlInfo := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname,
+	)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		return db, err
+	}
+
+	defer db.Close()
+
+	return db, nil
+}
