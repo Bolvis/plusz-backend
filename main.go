@@ -9,9 +9,12 @@ import (
 // the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.
 
 func main() {
-	scheduleRevision := scrapper.Scrap(
+	scheduleRevision, err := scrapper.Scrap(
 		"https://efz.usz.edu.pl/wp-content/include-me/plany_mick/zajecia_xml.php?kierunek=IiE&rok=3z",
 	)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
 	fmt.Println(scheduleRevision.Date)
 	for _, class := range scheduleRevision.Classes {

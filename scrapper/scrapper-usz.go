@@ -10,16 +10,16 @@ import (
 
 var scheduleRevision db.ScheduleRevision
 
-func Scrap(url string) db.ScheduleRevision {
+func Scrap(url string) (db.ScheduleRevision, error) {
 	c := initColly()
 
 	if err := c.Visit(url); err != nil {
-		fmt.Println(err.Error())
+		return scheduleRevision, err
 	}
 
 	scheduleRevision.Date = time.Now().Format(`2006-01-02`)
 
-	return scheduleRevision
+	return scheduleRevision, nil
 }
 
 func initColly() *colly.Collector {
@@ -47,7 +47,6 @@ func initColly() *colly.Collector {
 	// triggered once scraping is done (e.g., write the data to a CSV file)
 	c.OnScraped(func(r *colly.Response) {
 		fmt.Println(r.Request.URL, " scraped!")
-		fmt.Println(r.Request.Body)
 	})
 
 	return c
@@ -69,15 +68,7 @@ func onHTML(e *colly.HTMLElement) {
 		class.ClassNumber = line[5]
 	}
 
-	fmt.Print("[")
-	for _, v := range line {
-		fmt.Print(v, ", ")
-	}
-	fmt.Println("]")
-
 	if len(line) > 1 {
 		scheduleRevision.Classes = append(scheduleRevision.Classes, class)
 	}
-	//fmt.Println(strings.Fields(e.ChildText("td")))
-
 }
