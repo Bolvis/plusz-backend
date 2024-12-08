@@ -2,8 +2,10 @@ package service
 
 import (
 	"net/http"
-	"plusz-backend/scrapper"
+	"plusz-backend/db"
 	"strings"
+
+	"plusz-backend/scrapper"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,7 +32,12 @@ func GetSchedule(c *gin.Context) {
 
 	scheduleRevision, err := scrapper.ScrapUSZ(url)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := db.InsertClasses(scheduleRevision.Classes); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

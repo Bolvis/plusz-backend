@@ -3,6 +3,8 @@ package db
 import (
 	"database/sql"
 	"fmt"
+
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -23,8 +25,6 @@ func Connect() (*sql.DB, error) {
 	if err != nil {
 		return db, err
 	}
-
-	defer db.Close()
 
 	return db, nil
 }
