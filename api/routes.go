@@ -10,7 +10,7 @@ func Init() {
 
 	router.POST("/addScheduleVersion", service.GetSchedule)
 
-	if err := router.Run(":8080"); err != nil {
+	if err := router.Run(":2013"); err != nil {
 		panic(err)
 	}
 }
