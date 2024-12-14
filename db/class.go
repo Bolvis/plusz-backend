@@ -1,9 +1,8 @@
 package db
 
 import (
-	"strings"
-
 	"plusz-backend/util"
+	"strings"
 )
 
 type Class struct {
@@ -14,17 +13,6 @@ type Class struct {
 	Lecturer    string `json:"lecturer"`
 	Group       string `json:"group"`
 	ClassNumber string `json:"classNumber"`
-}
-
-type ScheduleRevision struct {
-	Id      string  `json:"id"`
-	Date    string  `json:"date"`
-	Classes []Class `json:"classes"`
-}
-
-type Schedule struct {
-	Id                string             `json:"id"`
-	ScheduleRevisions []ScheduleRevision `json:"schedule_revisions"`
 }
 
 func InsertClasses(classes []Class) error {
@@ -49,16 +37,6 @@ func InsertClasses(classes []Class) error {
 	if _, err := stmt.Exec(vals...); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func InsertSchedules(schedules []Schedule) error {
-
-	return nil
-}
-
-func InsertScheduleRevisions(scheduleRevisions []ScheduleRevision) error {
 
 	return nil
 }
