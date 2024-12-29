@@ -4,7 +4,7 @@ POST localhost:2013/addScheduleVersion
 Content-Type: application/json
 
 {
-  "year" : "3z",
+  "year" : "2z",
   "field" : "IiE",
   "user" : {
     "id" : "",
@@ -13,3 +13,15 @@ Content-Type: application/json
   }
 }
 
+
+###
+
+# @name=Get Current User Schedules
+GET localhost:2013/getUserSchedules
+Content-Type: application/json
+
+{
+  "id" : "",
+  "login" : "admin",
+  "password" : "admin"
+}

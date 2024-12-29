@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"net/http"
 	"plusz-backend/db"
 	"strings"
@@ -70,5 +71,25 @@ func AddScheduleRevision(c *gin.Context) {
 }
 
 func GetUserSchedules(c *gin.Context) {
+	var user db.User
 
+	if err := c.BindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	fmt.Println(user)
+
+	if err := db.AuthUser(&user); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	schedules, err := db.GetUserSchedules(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, schedules)
 }

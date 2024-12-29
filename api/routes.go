@@ -10,7 +10,7 @@ func Init() {
 
 	router.POST("/addScheduleVersion", service.AddScheduleRevision)
 
-	router.GET("/getUserSchedules", service.AddScheduleRevision)
+	router.GET("/getUserSchedules", service.GetUserSchedules)
 
 	if err := router.Run(":2013"); err != nil {
 		panic(err)
