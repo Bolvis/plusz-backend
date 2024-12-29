@@ -8,7 +8,8 @@ import (
 type Class struct {
 	Id          string `json:"id"`
 	Date        string `json:"date"`
-	Hour        string `json:"hour"`
+	StartHour   string `json:"startHour"`
+	EndHour     string `json:"endHour"`
 	Name        string `json:"name"`
 	Lecturer    string `json:"lecturer"`
 	Group       string `json:"group"`
@@ -28,8 +29,7 @@ func InsertClasses(classes []Class) error {
 
 	for _, v := range classes {
 		query += "(?::date,?::time,?::time,?::varchar,?::varchar,?::varchar,?::varchar),"
-		hours := strings.Split(strings.Replace(v.Hour, ".", ":", 2), "-")
-		vals = append(vals, v.Date, hours[0], hours[1], v.Name, v.Lecturer, v.Group, v.ClassNumber)
+		vals = append(vals, v.Date, v.StartHour, v.EndHour, v.Name, v.Lecturer, v.Group, v.ClassNumber)
 	}
 	query = strings.TrimSuffix(query, ",")
 	query = util.ReplaceSQL(query, "?")

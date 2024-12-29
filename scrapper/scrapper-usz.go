@@ -3,6 +3,7 @@ package scrapper
 import (
 	"plusz-backend/db"
 	"plusz-backend/util"
+	"strings"
 	"time"
 
 	"github.com/gocolly/colly"
@@ -21,7 +22,9 @@ func ScrapUSZ(url string) (db.ScheduleRevision, error) {
 		var class db.Class
 		if len(line) == 6 && line[0] != "Data" {
 			class.Date = line[0]
-			class.Hour = line[1]
+			hours := strings.Split(strings.Replace(line[1], ".", ":", 2), "-")
+			class.StartHour = hours[0]
+			class.EndHour = hours[1]
 			class.Name = line[2]
 			class.Lecturer = line[3]
 			class.Group = line[4]
