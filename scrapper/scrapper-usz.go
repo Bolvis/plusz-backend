@@ -17,8 +17,6 @@ func ScrapUSZ(url string, schedule db.Schedule) (db.Schedule, error) {
 	metadataCollector.AllowURLRevisit = true
 
 	var scheduleRevision db.ScheduleRevision
-	schedule.ScheduleRevisions = []db.ScheduleRevision{scheduleRevision}
-
 	tableCollector.OnHTML("tr", func(e *colly.HTMLElement) {
 		var line []string
 		e.ForEach("td", func(i int, rowElement *colly.HTMLElement) {
@@ -78,6 +76,7 @@ func ScrapUSZ(url string, schedule db.Schedule) (db.Schedule, error) {
 	}
 
 	scheduleRevision.Date = time.Now().Format(`2006-01-02`)
+	schedule.ScheduleRevisions = []db.ScheduleRevision{scheduleRevision}
 
 	return schedule, nil
 }
