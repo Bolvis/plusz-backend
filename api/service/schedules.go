@@ -30,13 +30,13 @@ func GetSchedule(c *gin.Context) {
 		request.Year,
 	}, "")
 
-	_, err := scrapper.ScrapUSZ(url)
+	schedule := db.Schedule{Field: request.Field, Year: request.Year}
+	schedule, err := scrapper.ScrapUSZ(url, schedule)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	schedule := db.Schedule{Field: request.Field, Year: request.Year, AcademicYear: "2024/2027"}
 	if schedule, err = db.GetScheduleId(schedule); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

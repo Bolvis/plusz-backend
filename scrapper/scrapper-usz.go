@@ -1,19 +1,25 @@
 package scrapper
 
 import (
+	"fmt"
 	"plusz-backend/db"
 	"plusz-backend/util"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gocolly/colly"
 )
 
-func ScrapUSZ(url string) (db.ScheduleRevision, error) {
-	c := initColly()
+func ScrapUSZ(url string, schedule db.Schedule) (db.Schedule, error) {
+	tableCollector := initColly()
+	metadataCollector := tableCollector.Clone()
+	metadataCollector.AllowURLRevisit = true
 
 	var scheduleRevision db.ScheduleRevision
-	c.OnHTML("tr", func(e *colly.HTMLElement) {
+	schedule.ScheduleRevisions = []db.ScheduleRevision{scheduleRevision}
+
+	tableCollector.OnHTML("tr", func(e *colly.HTMLElement) {
 		var line []string
 		e.ForEach("td", func(i int, rowElement *colly.HTMLElement) {
 			line = append(line, util.StandardizeSpaces(rowElement.DOM.Text()))
@@ -33,13 +39,47 @@ func ScrapUSZ(url string) (db.ScheduleRevision, error) {
 			scheduleRevision.Classes = append(scheduleRevision.Classes, class)
 		}
 	})
-	if err := c.Visit(url); err != nil {
-		return scheduleRevision, err
+	if err := tableCollector.Visit(url); err != nil {
+		fmt.Println("Failed to scrape usz table")
+		return schedule, err
+	}
+
+	metadataCollector.OnHTML("b", func(e *colly.HTMLElement) {
+		if strings.Contains(e.Text, "Rok akademicki:") {
+			schedule.AcademicYear = strings.TrimSpace(strings.Split(e.Text, ":")[1])
+		}
+		if strings.Contains(e.Text, "Semestr:") {
+			schedule.Semester = strings.TrimSpace(strings.Split(e.Text, ":")[1])
+		}
+	})
+
+	metadataCollector.OnHTML("span", func(e *colly.HTMLElement) {
+		if strings.Contains(e.Text, "Data aktualizacji:") {
+			dateArray := strings.Split(strings.TrimSpace(strings.Split(e.Text, ":")[1]), ".")
+			year, err := strconv.Atoi(dateArray[2])
+			if err != nil {
+				fmt.Println(err)
+			}
+			month, err := strconv.Atoi(dateArray[1])
+			if err != nil {
+				fmt.Println(err)
+			}
+			day, err := strconv.Atoi(dateArray[0])
+			if err != nil {
+				fmt.Println(err)
+			}
+			schedule.LastUpdateDate = time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+		}
+	})
+
+	if err := metadataCollector.Visit(url); err != nil {
+		fmt.Println("Failed to scrap USZ metadata")
+		return schedule, err
 	}
 
 	scheduleRevision.Date = time.Now().Format(`2006-01-02`)
 
-	return scheduleRevision, nil
+	return schedule, nil
 }
 
 func initColly() *colly.Collector {
