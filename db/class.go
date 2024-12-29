@@ -24,12 +24,15 @@ func InsertClasses(classes []*Class, scheduleRevisionId string) error {
 		return err
 	}
 
-	insertClasses := `INSERT INTO public.class (date, start_hour, end_hour, name, lecturer, group_number, class_number) VALUES `
+	insertClasses := `
+		INSERT INTO 
+		    public.class (date, start_hour, end_hour, name, lecturer, group_number, class_number, schedule_revision_id) 
+		VALUES `
 	var classesVals []interface{}
 
 	for _, v := range classes {
-		insertClasses += "(?::date,?::time,?::time,?::varchar,?::varchar,?::varchar,?::varchar),"
-		classesVals = append(classesVals, v.Date, v.StartHour, v.EndHour, v.Name, v.Lecturer, v.Group, v.ClassNumber)
+		insertClasses += "(?::date,?::time,?::time,?::varchar,?::varchar,?::varchar,?::varchar,?::integer),"
+		classesVals = append(classesVals, v.Date, v.StartHour, v.EndHour, v.Name, v.Lecturer, v.Group, v.ClassNumber, scheduleRevisionId)
 	}
 	insertClasses = strings.TrimSuffix(insertClasses, ",")
 	insertClasses += " RETURNING id"
@@ -53,17 +56,55 @@ func InsertClasses(classes []*Class, scheduleRevisionId string) error {
 		class.Id = classesIds[i]
 	}
 
-	insertRelations := `INSERT INTO public.schedule_revision_class_relation (class_id, schedule_revision_id) VALUES `
-	var relationsVals []interface{}
-	for _, v := range classes {
-		insertRelations += "(?::integer,?::integer),"
-		relationsVals = append(relationsVals, v.Id, scheduleRevisionId)
-	}
-	insertRelations = strings.TrimSuffix(insertRelations, ",")
-	insertRelations = util.ReplaceSQL(insertRelations, "?")
-	if _, err := db.Exec(insertRelations, relationsVals...); err != nil {
-		return err
+	return nil
+}
+
+func GetScheduleRevisionClasses(scheduleRevisionId string) ([]*Class, error) {
+	db, err := Connect()
+	defer db.Close()
+
+	var classes []*Class
+	if err != nil {
+		return classes, err
 	}
 
-	return nil
+	query := `
+		SELECT 
+		    id, 
+		    date, 
+		    start_hour, 
+		    end_hour, 
+		    name, 
+		    lecturer, 
+		    group_number, 
+		    class_number 
+		FROM class c
+		WHERE schedule_revision_id = $1
+	`
+
+	rows, err := db.Query(query, scheduleRevisionId)
+	defer rows.Close()
+
+	if err != nil {
+		return classes, err
+	}
+	for rows.Next() {
+		var class Class
+		err := rows.Scan(
+			&class.Id,
+			&class.Date,
+			&class.StartHour,
+			&class.EndHour,
+			&class.Name,
+			&class.Lecturer,
+			&class.Group,
+			&class.ClassNumber,
+		)
+		if err != nil {
+			return nil, err
+		}
+		classes = append(classes, &class)
+	}
+
+	return classes, nil
 }
