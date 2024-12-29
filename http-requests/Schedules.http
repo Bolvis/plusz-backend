@@ -1,0 +1,7 @@
+###
+# @name=Add Schedule Version
+POST localhost:2013/addScheduleVersion
+Content-Type: application/json
+
+{ "year" : "3z", "field" : "IiE"}
+
