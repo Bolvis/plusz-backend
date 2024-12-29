@@ -42,5 +42,10 @@ func GetSchedule(c *gin.Context) {
 		return
 	}
 
+	if schedule.ScheduleRevisions[0], err = db.GetScheduleRevisionId(schedule.ScheduleRevisions[0], schedule.Id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, schedule)
 }

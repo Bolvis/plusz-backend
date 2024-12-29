@@ -34,7 +34,7 @@ func ScrapUSZ(url string, schedule db.Schedule) (db.Schedule, error) {
 			class.Group = line[4]
 			class.ClassNumber = line[5]
 
-			scheduleRevision.Classes = append(scheduleRevision.Classes, class)
+			scheduleRevision.Classes = append(scheduleRevision.Classes, &class)
 		}
 	})
 	if err := tableCollector.Visit(url); err != nil {
@@ -76,7 +76,7 @@ func ScrapUSZ(url string, schedule db.Schedule) (db.Schedule, error) {
 	}
 
 	scheduleRevision.Date = time.Now().Format(`2006-01-02`)
-	schedule.ScheduleRevisions = []db.ScheduleRevision{scheduleRevision}
+	schedule.ScheduleRevisions = []*db.ScheduleRevision{&scheduleRevision}
 
 	return schedule, nil
 }

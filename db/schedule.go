@@ -5,12 +5,12 @@ import (
 )
 
 type Schedule struct {
-	Id                string             `json:"id"`
-	Field             string             `json:"field"`
-	Year              string             `json:"year"`
-	AcademicYear      string             `json:"academic_year"`
-	Semester          string             `json:"semester"`
-	ScheduleRevisions []ScheduleRevision `json:"schedule_revisions"`
+	Id                string              `json:"id"`
+	Field             string              `json:"field"`
+	Year              string              `json:"year"`
+	AcademicYear      string              `json:"academic_year"`
+	Semester          string              `json:"semester"`
+	ScheduleRevisions []*ScheduleRevision `json:"schedule_revisions"`
 }
 
 func GetScheduleId(schedule Schedule) (Schedule, error) {
@@ -30,7 +30,7 @@ func GetScheduleId(schedule Schedule) (Schedule, error) {
 	if err = db.QueryRow(searchQuery, schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester).Scan(&schedule.Id); err != nil {
 		fmt.Println(err)
 		fmt.Println("inserting a new schedule...")
-		insertQuery := `INSERT INTO schedule (field, year, academic_year, semester, last_update_date) VALUES ($1, $2, $3, $4) RETURNING id`
+		insertQuery := `INSERT INTO schedule (field, year, academic_year, semester) VALUES ($1, $2, $3, $4) RETURNING id`
 		stmt, err := db.Prepare(insertQuery)
 		defer stmt.Close()
 		if err != nil {
@@ -42,6 +42,6 @@ func GetScheduleId(schedule Schedule) (Schedule, error) {
 		}
 		fmt.Println("inserted successfully")
 	}
-	fmt.Println(schedule)
+
 	return schedule, nil
 }
