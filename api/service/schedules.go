@@ -11,15 +11,21 @@ import (
 )
 
 type scheduleRequest struct {
-	Year  string `json:"year"`
-	Field string `json:"field"`
+	Year  string  `json:"year"`
+	Field string  `json:"field"`
+	User  db.User `json:"user"`
 }
 
-func GetSchedule(c *gin.Context) {
+func AddScheduleRevision(c *gin.Context) {
 	var request scheduleRequest
 
 	if err := c.BindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := db.AuthUser(&request.User); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
@@ -55,5 +61,14 @@ func GetSchedule(c *gin.Context) {
 		}
 	}
 
+	if err := db.AssignUserSchedule(request.User, schedule); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, schedule)
+}
+
+func GetUserSchedules(c *gin.Context) {
+
 }

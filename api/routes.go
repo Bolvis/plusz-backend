@@ -8,7 +8,9 @@ import (
 func Init() {
 	router := gin.Default()
 
-	router.POST("/addScheduleVersion", service.GetSchedule)
+	router.POST("/addScheduleVersion", service.AddScheduleRevision)
+
+	router.GET("/getUserSchedules", service.AddScheduleRevision)
 
 	if err := router.Run(":2013"); err != nil {
 		panic(err)

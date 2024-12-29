@@ -3,5 +3,13 @@
 POST localhost:2013/addScheduleVersion
 Content-Type: application/json
 
-{ "year" : "3z", "field" : "IiE"}
+{
+  "year" : "3z",
+  "field" : "IiE",
+  "user" : {
+    "id" : "",
+    "login" : "admin",
+    "password" :  "admin"
+  }
+}
 
