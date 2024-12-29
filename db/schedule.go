@@ -10,7 +10,6 @@ type Schedule struct {
 	Year              string             `json:"year"`
 	AcademicYear      string             `json:"academic_year"`
 	Semester          string             `json:"semester"`
-	LastUpdateDate    string             `json:"last_update_date"`
 	ScheduleRevisions []ScheduleRevision `json:"schedule_revisions"`
 }
 
@@ -25,20 +24,20 @@ func GetScheduleId(schedule Schedule) (Schedule, error) {
 	searchQuery := `
 		SELECT id
 		FROM schedule 
-		WHERE field = $1 AND year = $2 AND academic_year = $3 AND semester = $4 AND last_update_date = $5
+		WHERE field = $1 AND year = $2 AND academic_year = $3 AND semester = $4
 	`
 
-	if err = db.QueryRow(searchQuery, schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester, schedule.LastUpdateDate).Scan(&schedule.Id); err != nil {
+	if err = db.QueryRow(searchQuery, schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester).Scan(&schedule.Id); err != nil {
 		fmt.Println(err)
 		fmt.Println("inserting a new schedule...")
-		insertQuery := `INSERT INTO schedule (field, year, academic_year, semester, last_update_date) VALUES ($1, $2, $3, $4, $5) RETURNING id`
+		insertQuery := `INSERT INTO schedule (field, year, academic_year, semester, last_update_date) VALUES ($1, $2, $3, $4) RETURNING id`
 		stmt, err := db.Prepare(insertQuery)
 		defer stmt.Close()
 		if err != nil {
 			return schedule, err
 		}
 
-		if err = stmt.QueryRow(schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester, schedule.LastUpdateDate).Scan(&schedule.Id); err != nil {
+		if err = stmt.QueryRow(schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester).Scan(&schedule.Id); err != nil {
 			return schedule, err
 		}
 		fmt.Println("inserted successfully")

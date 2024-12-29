@@ -6,7 +6,7 @@ type ScheduleRevision struct {
 	Classes []Class `json:"classes"`
 }
 
-func InsertScheduleRevisions(scheduleRevisions []ScheduleRevision) error {
+func GetScheduleRevisionId(scheduleRevisions []ScheduleRevision) error {
 	//db, err := Connect()
 	//defer db.Close()
 	//

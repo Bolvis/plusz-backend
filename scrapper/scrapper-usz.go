@@ -66,7 +66,7 @@ func ScrapUSZ(url string, schedule db.Schedule) (db.Schedule, error) {
 			if err != nil {
 				fmt.Println(err)
 			}
-			schedule.LastUpdateDate = time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+			scheduleRevision.Date = time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
 		}
 	})
 
