@@ -30,16 +30,17 @@ func GetSchedule(c *gin.Context) {
 		request.Year,
 	}, "")
 
-	scheduleRevision, err := scrapper.ScrapUSZ(url)
+	_, err := scrapper.ScrapUSZ(url)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := db.InsertClasses(scheduleRevision.Classes); err != nil {
+	schedule := db.Schedule{Field: request.Field, Year: request.Year, AcademicYear: "2024/2027"}
+	if schedule, err = db.GetScheduleId(schedule); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, scheduleRevision)
+	c.JSON(http.StatusOK, schedule)
 }

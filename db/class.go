@@ -33,7 +33,11 @@ func InsertClasses(classes []Class) error {
 	}
 	query = strings.TrimSuffix(query, ",")
 	query = util.ReplaceSQL(query, "?")
-	stmt, _ := db.Prepare(query)
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+
 	if _, err := stmt.Exec(vals...); err != nil {
 		return err
 	}

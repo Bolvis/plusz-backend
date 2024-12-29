@@ -7,6 +7,14 @@ type ScheduleRevision struct {
 }
 
 func InsertScheduleRevisions(scheduleRevisions []ScheduleRevision) error {
+	//db, err := Connect()
+	//defer db.Close()
+	//
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//query := `INSERT INTO public.class (date, start_hour, end_hour, name, lecturer, group_number, class_number) VALUES `
 
 	return nil
 }
