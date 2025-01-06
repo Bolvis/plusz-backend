@@ -75,7 +75,6 @@ func ScrapUSZ(url string, schedule db.Schedule) (db.Schedule, error) {
 		return schedule, err
 	}
 
-	scheduleRevision.Date = time.Now().Format(`2006-01-02`)
 	schedule.ScheduleRevisions = []*db.ScheduleRevision{&scheduleRevision}
 
 	return schedule, nil
