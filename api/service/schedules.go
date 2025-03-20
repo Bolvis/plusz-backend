@@ -3,9 +3,9 @@ package service
 import (
 	"fmt"
 	"net/http"
-	"plusz-backend/db"
 	"strings"
 
+	"plusz-backend/db"
 	"plusz-backend/scrapper"
 
 	"github.com/gin-gonic/gin"

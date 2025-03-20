@@ -1,8 +1,9 @@
 package db
 
 import (
-	"plusz-backend/util"
 	"strings"
+
+	"plusz-backend/util"
 )
 
 type Class struct {

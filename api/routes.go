@@ -1,8 +1,9 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
 	"plusz-backend/api/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Init() {

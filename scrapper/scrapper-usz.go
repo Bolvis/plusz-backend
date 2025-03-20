@@ -2,11 +2,12 @@ package scrapper
 
 import (
 	"fmt"
-	"plusz-backend/db"
-	"plusz-backend/util"
 	"strconv"
 	"strings"
 	"time"
+
+	"plusz-backend/db"
+	"plusz-backend/util"
 
 	"github.com/gocolly/colly"
 )
