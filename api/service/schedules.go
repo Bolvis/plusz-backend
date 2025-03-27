@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -71,14 +70,10 @@ func AddScheduleRevision(c *gin.Context) {
 }
 
 func GetUserSchedules(c *gin.Context) {
-	var user db.User
+	login := c.Query("login")
+	password := c.Query("password")
 
-	if err := c.BindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	fmt.Println(user)
+	user := db.User{Login: login, Password: password}
 
 	if err := db.AuthUser(&user); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
