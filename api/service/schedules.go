@@ -86,20 +86,25 @@ func GetUserSchedules(c *gin.Context) {
 		return
 	}
 
-	for i, schedule := range schedules {
-		var scheduleRevisions []*db.ScheduleRevision
-		if scheduleRevisions, err = db.GetScheduleRevisions(schedule.Id); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
-		for j, scheduleRevision := range scheduleRevisions {
-			var classes []*db.Class
-			if classes, err = db.GetScheduleRevisionClasses(scheduleRevision.Id); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			}
-			scheduleRevisions[j].Classes = classes
-		}
-		schedules[i].ScheduleRevisions = scheduleRevisions
-	}
-
 	c.JSON(http.StatusOK, schedules)
+}
+
+func GetScheduleRevisions(c *gin.Context) {
+	scheduleId := c.Query("scheduleId")
+	schedule := db.Schedule{Id: scheduleId}
+	var scheduleRevisions []*db.ScheduleRevision
+	var err error
+	if scheduleRevisions, err = db.GetScheduleRevisions(schedule.Id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	//for j, scheduleRevision := range scheduleRevisions {
+	//	var classes []*db.Class
+	//	if classes, err = db.GetScheduleRevisionClasses(scheduleRevision.Id); err != nil {
+	//		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	//	}
+	//	scheduleRevisions[j].Classes = classes
+	//}
+	schedule.ScheduleRevisions = scheduleRevisions
+
+	c.JSON(http.StatusOK, schedule)
 }

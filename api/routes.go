@@ -13,6 +13,8 @@ func Init() {
 
 	router.GET("/getUserSchedules", service.GetUserSchedules)
 
+	router.GET("/getScheduleRevisions", service.GetScheduleRevisions)
+
 	if err := router.Run(":2013"); err != nil {
 		panic(err)
 	}
