@@ -108,3 +108,18 @@ func GetScheduleRevisions(c *gin.Context) {
 
 	c.JSON(http.StatusOK, schedule)
 }
+
+func GetRevisionClasses(c *gin.Context) {
+	revisionId := c.Query("revisionId")
+
+	revision := db.ScheduleRevision{Id: revisionId}
+	var classes []*db.Class
+	var err error
+	if classes, err = db.GetScheduleRevisionClasses(revision.Id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	revision.Classes = classes
+
+	c.JSON(http.StatusOK, revision)
+}

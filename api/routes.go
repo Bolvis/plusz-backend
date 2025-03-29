@@ -15,6 +15,8 @@ func Init() {
 
 	router.GET("/getScheduleRevisions", service.GetScheduleRevisions)
 
+	router.GET("/getRevisionClasses", service.GetRevisionClasses)
+
 	if err := router.Run(":2013"); err != nil {
 		panic(err)
 	}
