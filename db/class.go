@@ -81,6 +81,7 @@ func GetScheduleRevisionClasses(scheduleRevisionId string) ([]*Class, error) {
 		    class_number 
 		FROM class c
 		WHERE schedule_revision_id = $1
+		ORDER BY "date", start_hour ASC
 	`
 
 	rows, err := db.Query(query, scheduleRevisionId)
