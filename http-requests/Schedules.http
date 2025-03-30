@@ -27,8 +27,8 @@ POST localhost:2013/addNote
 Content-Type: application/json
 
 {
-  "noteBody" : "Testowa notatka",
-  "classId" : "17",
+  "noteBody" : "Nowa treść",
+  "classId" : "18",
   "User" : {
     "id" : "",
     "login" : "test",
@@ -36,6 +36,10 @@ Content-Type: application/json
   }
 }
 
+###
+
+# @name=Get Note
+GET localhost:2013/getNote?classId=19&login=test&password=sci
 ###
 
 # @name=Get Classes

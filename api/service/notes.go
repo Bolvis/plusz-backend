@@ -16,6 +16,7 @@ func AddNote(c *gin.Context) {
 	var request noteRequest
 	if err := c.BindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	if err := db.AuthUser(&request.User); err != nil {
@@ -32,4 +33,24 @@ func AddNote(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"id": note.Id})
+}
+
+func GetNote(c *gin.Context) {
+	var err error
+	classId := c.Query("classId")
+
+	user := db.User{Login: c.Query("login"), Password: c.Query("password")}
+	if err = db.AuthUser(&user); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	var note db.Note
+	note, err = db.ReadNote(user.Id, classId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, note)
 }

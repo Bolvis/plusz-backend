@@ -96,6 +96,7 @@ func GetScheduleRevisions(c *gin.Context) {
 	var err error
 	if scheduleRevisions, err = db.GetScheduleRevisions(schedule.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	//for j, scheduleRevision := range scheduleRevisions {
 	//	var classes []*db.Class
@@ -117,6 +118,7 @@ func GetRevisionClasses(c *gin.Context) {
 	var err error
 	if classes, err = db.GetScheduleRevisionClasses(revision.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	revision.Classes = classes
@@ -129,10 +131,12 @@ func RemoveScheduleRevisionAssigment(c *gin.Context) {
 	user := db.User{Login: c.Query("login"), Password: c.Query("password")}
 	if err := db.AuthUser(&user); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
 	}
 
 	if err := db.RemoveUserScheduleAssigment(user.Id, scheduleId); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})

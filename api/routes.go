@@ -13,6 +13,8 @@ func Init() {
 
 	router.POST("/addNote", service.AddNote)
 
+	router.GET("/getNote", service.GetNote)
+
 	router.GET("/getUserSchedules", service.GetUserSchedules)
 
 	router.GET("/getScheduleRevisions", service.GetScheduleRevisions)
