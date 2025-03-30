@@ -123,3 +123,17 @@ func GetRevisionClasses(c *gin.Context) {
 
 	c.JSON(http.StatusOK, revision)
 }
+
+func RemoveScheduleRevisionAssigment(c *gin.Context) {
+	scheduleId := c.Query("scheduleId")
+	user := db.User{Login: c.Query("login"), Password: c.Query("password")}
+	if err := db.AuthUser(&user); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	}
+
+	if err := db.RemoveUserScheduleAssigment(user.Id, scheduleId); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}

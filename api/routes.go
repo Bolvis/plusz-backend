@@ -17,6 +17,8 @@ func Init() {
 
 	router.GET("/getRevisionClasses", service.GetRevisionClasses)
 
+	router.DELETE("/usersAssignedSchedule", service.RemoveScheduleRevisionAssigment)
+
 	if err := router.Run(":2013"); err != nil {
 		panic(err)
 	}

@@ -8,8 +8,8 @@ Content-Type: application/json
   "field" : "IiE",
   "user" : {
     "id" : "",
-    "login" : "admin",
-    "password" :  "admin"
+    "login" : "test",
+    "password" :  "sci"
   }
 }
 
@@ -22,6 +22,16 @@ Content-Type: application/json
 
 {
   "id" : "",
-  "login" : "admin",
-  "password" : "admin"
+  "login" : "test",
+  "password" : "sci"
 }
+
+###
+
+# @name=Get Classes
+GET localhost:2013/getRevisionClasses?revisionId=1
+
+###
+
+# @name=Delete user schedule relation
+DELETE localhost:2013/usersAssignedSchedule?login=test&password=sci&scheduleId=11

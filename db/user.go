@@ -39,10 +39,23 @@ func AssignUserSchedule(user User, schedule Schedule) error {
 		if err = db.QueryRow(`INSERT INTO user_schedule_relation (user_id, schedule_id) VALUES ($1, $2) RETURNING id`, user.Id, schedule.Id).Err(); err != nil {
 			return err
 		}
-
 		fmt.Println("Assign schedule(", schedule.Id, ") to user(", user.Id, ")")
 	} else {
 		fmt.Println("User(", user.Id, ") already assigned to schedule(", schedule.Id, ")")
+	}
+
+	return nil
+}
+
+func RemoveUserScheduleAssigment(userId string, scheduleId string) error {
+	db, err := Connect()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if err = db.QueryRow(`DELETE FROM user_schedule_relation WHERE user_id = $1 AND schedule_id = $2`, userId, scheduleId).Err(); err != nil {
+		return err
 	}
 
 	return nil
