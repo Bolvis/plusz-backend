@@ -17,13 +17,23 @@ Content-Type: application/json
 ###
 
 # @name=Get Current User Schedules
-GET localhost:2013/getUserSchedules
+GET localhost:2013/getUserSchedules?login=test&password=sci
+Content-Type: application/json
+
+###
+
+# @name=Add note
+POST localhost:2013/addNote
 Content-Type: application/json
 
 {
-  "id" : "",
-  "login" : "test",
-  "password" : "sci"
+  "noteBody" : "Testowa notatka",
+  "classId" : "17",
+  "User" : {
+    "id" : "",
+    "login" : "test",
+    "password" : "sci"
+  }
 }
 
 ###
