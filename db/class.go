@@ -1,20 +1,22 @@
 package db
 
 import (
+	"database/sql"
 	"strings"
 
 	"plusz-backend/util"
 )
 
 type Class struct {
-	Id          string `json:"id"`
-	Date        string `json:"date"`
-	StartHour   string `json:"startHour"`
-	EndHour     string `json:"endHour"`
-	Name        string `json:"name"`
-	Lecturer    string `json:"lecturer"`
-	Group       string `json:"group"`
-	ClassNumber string `json:"classNumber"`
+	Id          string         `json:"id"`
+	Date        string         `json:"date"`
+	StartHour   string         `json:"startHour"`
+	EndHour     string         `json:"endHour"`
+	Name        string         `json:"name"`
+	Lecturer    string         `json:"lecturer"`
+	Group       string         `json:"group"`
+	ClassNumber string         `json:"classNumber"`
+	NoteBody    sql.NullString `json:"note"`
 }
 
 func InsertClasses(classes []*Class, scheduleRevisionId string) error {
@@ -60,7 +62,7 @@ func InsertClasses(classes []*Class, scheduleRevisionId string) error {
 	return nil
 }
 
-func GetScheduleRevisionClasses(scheduleRevisionId string) ([]*Class, error) {
+func GetScheduleRevisionClasses(userId string, scheduleRevisionId string) ([]*Class, error) {
 	db, err := Connect()
 	defer db.Close()
 
@@ -70,21 +72,23 @@ func GetScheduleRevisionClasses(scheduleRevisionId string) ([]*Class, error) {
 	}
 
 	query := `
-		SELECT 
-		    id, 
-		    date, 
-		    start_hour, 
-		    end_hour, 
-		    name, 
-		    lecturer, 
-		    group_number, 
-		    class_number 
-		FROM class c
-		WHERE schedule_revision_id = $1
-		ORDER BY "date", start_hour ASC
-	`
+			SELECT 
+				c.id,
+				n.note_body,
+				date, 
+				start_hour, 
+				end_hour, 
+				name, 
+				lecturer, 
+				group_number, 
+				class_number 
+			FROM class c
+			LEFT JOIN note n ON n.class_id = c.id AND n.author_id = $1
+			WHERE schedule_revision_id = $2
+			ORDER BY "date", start_hour
+		`
 
-	rows, err := db.Query(query, scheduleRevisionId)
+	rows, err := db.Query(query, userId, scheduleRevisionId)
 	defer rows.Close()
 
 	if err != nil {
@@ -94,6 +98,7 @@ func GetScheduleRevisionClasses(scheduleRevisionId string) ([]*Class, error) {
 		var class Class
 		err := rows.Scan(
 			&class.Id,
+			&class.NoteBody,
 			&class.Date,
 			&class.StartHour,
 			&class.EndHour,

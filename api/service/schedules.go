@@ -112,11 +112,19 @@ func GetScheduleRevisions(c *gin.Context) {
 
 func GetRevisionClasses(c *gin.Context) {
 	revisionId := c.Query("revisionId")
+	login := c.Query("login")
+	password := c.Query("password")
+
+	user := db.User{Login: login, Password: password}
+	if err := db.AuthUser(&user); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	revision := db.ScheduleRevision{Id: revisionId}
 	var classes []*db.Class
 	var err error
-	if classes, err = db.GetScheduleRevisionClasses(revision.Id); err != nil {
+	if classes, err = db.GetScheduleRevisionClasses(user.Id, revision.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

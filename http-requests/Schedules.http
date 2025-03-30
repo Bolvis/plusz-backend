@@ -39,11 +39,11 @@ Content-Type: application/json
 ###
 
 # @name=Get Note
-GET localhost:2013/getNote?classId=19&login=test&password=sci
+GET localhost:2013/getNote?classId=18&login=test&password=sci
 ###
 
 # @name=Get Classes
-GET localhost:2013/getRevisionClasses?revisionId=1
+GET localhost:2013/getRevisionClasses?revisionId=1&login=test&password=sci
 
 ###
 

@@ -32,7 +32,7 @@ func AddNote(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"id": note.Id})
+	c.JSON(http.StatusOK, gin.H{"id": note.Id})
 }
 
 func GetNote(c *gin.Context) {
