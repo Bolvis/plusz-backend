@@ -28,6 +28,21 @@ func AuthUser(user *User) error {
 	return nil
 }
 
+func GetUserByLogin(login string) (User, error) {
+	var user User
+	db, err := Connect()
+	defer db.Close()
+	if err != nil {
+		return user, err
+	}
+
+	if err = db.QueryRow(`SELECT id, login, password FROM "user" WHERE login = $1`, login).Scan(&user.Id, &user.Login, &user.Password); err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
 func InsertUser(user User) (string, error) {
 	db, err := Connect()
 	defer db.Close()

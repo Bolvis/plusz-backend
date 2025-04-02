@@ -13,6 +13,8 @@ func Init() {
 
 	router.POST("/registerUser", service.RegisterUser)
 
+	router.POST("/authenticateUser", service.AuthenticateUser)
+
 	router.POST("/addNote", service.AddNote)
 
 	router.GET("/getNote", service.GetNote)
