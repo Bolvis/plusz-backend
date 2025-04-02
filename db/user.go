@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -26,6 +28,28 @@ func AuthUser(user *User) error {
 	return nil
 }
 
+func InsertUser(user User) (string, error) {
+	db, err := Connect()
+	defer db.Close()
+	if err != nil {
+		return "", err
+	}
+
+	if err = db.QueryRow(`SELECT id FROM "user" WHERE login = $1`, user.Login).Scan(); errors.Is(err, sql.ErrNoRows) {
+		var id string
+		if err = db.QueryRow(`INSERT INTO "user" (login, password) VALUES ($1, $2) RETURNING id`, user.Login, user.Password).Scan(&id); err != nil {
+			return "", err
+		}
+		return id, nil
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	return "", errors.New("user with the same login already exists")
+}
+
 func AssignUserSchedule(user User, schedule Schedule) error {
 	db, err := Connect()
 	defer db.Close()
@@ -36,7 +60,7 @@ func AssignUserSchedule(user User, schedule Schedule) error {
 
 	id := ""
 	if err = db.QueryRow(`SELECT id FROM user_schedule_relation WHERE user_id = $1 AND schedule_id = $2`, user.Id, schedule.Id).Scan(&id); err != nil {
-		if err = db.QueryRow(`INSERT INTO user_schedule_relation (user_id, schedule_id) VALUES ($1, $2) RETURNING id`, user.Id, schedule.Id).Err(); err != nil {
+		if err = db.QueryRow(`INSERT INTO user_schedule_relation (user_id, schedule_id) VALUES ($1, $2)`, user.Id, schedule.Id).Err(); err != nil {
 			return err
 		}
 		fmt.Println("Assign schedule(", schedule.Id, ") to user(", user.Id, ")")
