@@ -12,22 +12,6 @@ type User struct {
 	Password string `json:"password"`
 }
 
-func AuthUser(user *User) error {
-	db, err := Connect()
-	defer db.Close()
-
-	if err != nil {
-		return err
-	}
-
-	if err = db.QueryRow(`SELECT id FROM "user" WHERE login = $1 AND password = $2`, user.Login, user.Password).Scan(&user.Id); err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	return nil
-}
-
 func GetUserByLogin(login string) (User, error) {
 	var user User
 	db, err := Connect()
@@ -65,7 +49,7 @@ func InsertUser(user User) (string, error) {
 	return "", errors.New("user with the same login already exists")
 }
 
-func AssignUserSchedule(user User, schedule Schedule) error {
+func AssignUserSchedule(userId string, scheduleId string) error {
 	db, err := Connect()
 	defer db.Close()
 
@@ -74,13 +58,13 @@ func AssignUserSchedule(user User, schedule Schedule) error {
 	}
 
 	id := ""
-	if err = db.QueryRow(`SELECT id FROM user_schedule_relation WHERE user_id = $1 AND schedule_id = $2`, user.Id, schedule.Id).Scan(&id); err != nil {
-		if err = db.QueryRow(`INSERT INTO user_schedule_relation (user_id, schedule_id) VALUES ($1, $2)`, user.Id, schedule.Id).Err(); err != nil {
+	if err = db.QueryRow(`SELECT id FROM user_schedule_relation WHERE user_id = $1 AND schedule_id = $2`, userId, scheduleId).Scan(&id); err != nil {
+		if err = db.QueryRow(`INSERT INTO user_schedule_relation (user_id, schedule_id) VALUES ($1, $2)`, userId, scheduleId).Err(); err != nil {
 			return err
 		}
-		fmt.Println("Assign schedule(", schedule.Id, ") to user(", user.Id, ")")
+		fmt.Println("Assign schedule(", scheduleId, ") to user(", userId, ")")
 	} else {
-		fmt.Println("User(", user.Id, ") already assigned to schedule(", schedule.Id, ")")
+		fmt.Println("User(", userId, ") already assigned to schedule(", scheduleId, ")")
 	}
 
 	return nil
@@ -100,7 +84,7 @@ func RemoveUserScheduleAssigment(userId string, scheduleId string) error {
 	return nil
 }
 
-func GetUserSchedules(user User) ([]Schedule, error) {
+func GetUserSchedules(userId string) ([]Schedule, error) {
 	db, err := Connect()
 	defer db.Close()
 
@@ -121,7 +105,7 @@ func GetUserSchedules(user User) ([]Schedule, error) {
 		WHERE $1 = usr.user_id
  	`
 
-	rows, err := db.Query(query, user.Id)
+	rows, err := db.Query(query, userId)
 	defer rows.Close()
 	if err != nil {
 		return schedules, err

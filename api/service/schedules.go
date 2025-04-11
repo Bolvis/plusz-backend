@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/http"
+	"plusz-backend/api/authorization"
 	"strings"
 
 	"plusz-backend/db"
@@ -11,21 +12,22 @@ import (
 )
 
 type scheduleRequest struct {
-	Year  string  `json:"year"`
-	Field string  `json:"field"`
-	User  db.User `json:"user"`
+	Year  string `json:"year"`
+	Field string `json:"field"`
 }
 
 func AddScheduleRevision(c *gin.Context) {
 	var request scheduleRequest
+	tokenString := c.Request.Header.Get("Authorization")
 
 	if err := c.BindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := db.AuthUser(&request.User); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	token, err := authorization.VerifyToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -37,7 +39,7 @@ func AddScheduleRevision(c *gin.Context) {
 	}, "")
 
 	schedule := db.Schedule{Field: request.Field, Year: request.Year}
-	schedule, err := scrapper.ScrapUSZ(url, schedule)
+	schedule, err = scrapper.ScrapUSZ(url, schedule)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -61,7 +63,7 @@ func AddScheduleRevision(c *gin.Context) {
 		}
 	}
 
-	if err := db.AssignUserSchedule(request.User, schedule); err != nil {
+	if err := db.AssignUserSchedule(token.UserId, schedule.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -70,17 +72,15 @@ func AddScheduleRevision(c *gin.Context) {
 }
 
 func GetUserSchedules(c *gin.Context) {
-	login := c.Query("login")
-	password := c.Query("password")
+	tokenString := c.Request.Header.Get("Authorization")
 
-	user := db.User{Login: login, Password: password}
-
-	if err := db.AuthUser(&user); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	token, err := authorization.VerifyToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	schedules, err := db.GetUserSchedules(user)
+	schedules, err := db.GetUserSchedules(token.UserId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -90,21 +90,22 @@ func GetUserSchedules(c *gin.Context) {
 }
 
 func GetScheduleRevisions(c *gin.Context) {
+	tokenString := c.Request.Header.Get("Authorization")
+
+	_, err := authorization.VerifyToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
 	scheduleId := c.Query("scheduleId")
 	schedule := db.Schedule{Id: scheduleId}
 	var scheduleRevisions []*db.ScheduleRevision
-	var err error
 	if scheduleRevisions, err = db.GetScheduleRevisions(schedule.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	//for j, scheduleRevision := range scheduleRevisions {
-	//	var classes []*db.Class
-	//	if classes, err = db.GetScheduleRevisionClasses(scheduleRevision.Id); err != nil {
-	//		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	//	}
-	//	scheduleRevisions[j].Classes = classes
-	//}
+
 	schedule.ScheduleRevisions = scheduleRevisions
 
 	c.JSON(http.StatusOK, schedule)
@@ -112,19 +113,17 @@ func GetScheduleRevisions(c *gin.Context) {
 
 func GetRevisionClasses(c *gin.Context) {
 	revisionId := c.Query("revisionId")
-	login := c.Query("login")
-	password := c.Query("password")
+	tokenString := c.Request.Header.Get("Authorization")
 
-	user := db.User{Login: login, Password: password}
-	if err := db.AuthUser(&user); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	token, err := authorization.VerifyToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
 	revision := db.ScheduleRevision{Id: revisionId}
 	var classes []*db.Class
-	var err error
-	if classes, err = db.GetScheduleRevisionClasses(user.Id, revision.Id); err != nil {
+	if classes, err = db.GetScheduleRevisionClasses(token.UserId, revision.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -136,13 +135,15 @@ func GetRevisionClasses(c *gin.Context) {
 
 func RemoveScheduleRevisionAssigment(c *gin.Context) {
 	scheduleId := c.Query("scheduleId")
-	user := db.User{Login: c.Query("login"), Password: c.Query("password")}
-	if err := db.AuthUser(&user); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	tokenString := c.Request.Header.Get("Authorization")
+
+	token, err := authorization.VerifyToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := db.RemoveUserScheduleAssigment(user.Id, scheduleId); err != nil {
+	if err := db.RemoveUserScheduleAssigment(token.UserId, scheduleId); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
