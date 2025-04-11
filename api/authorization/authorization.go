@@ -57,7 +57,7 @@ func VerifyToken(tokenString string) (Token, error) {
 	h.Write(payload)
 	expectedSig := h.Sum(nil)
 
-	actualSig, err := base64.URLEncoding.DecodeString(parts[1])
+	actualSig, err := base64.StdEncoding.DecodeString(parts[1])
 	if err != nil {
 		return token, fmt.Errorf("invalid signature encoding: %w", err)
 	}
