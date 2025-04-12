@@ -240,7 +240,7 @@ func GetScheduleRevisions(c *gin.Context) {
 		return
 	}
 
-	scheduleId := c.Query("scheduleId")
+	scheduleId := c.Param("scheduleId")
 	schedule := db.Schedule{Id: scheduleId}
 	var scheduleRevisions []*db.ScheduleRevision
 	if scheduleRevisions, err = db.GetScheduleRevisions(schedule.Id); err != nil {
@@ -255,7 +255,7 @@ func GetScheduleRevisions(c *gin.Context) {
 }
 
 func GetRevisionClasses(c *gin.Context) {
-	revisionId := c.Query("revisionId")
+	revisionId := c.Param("revisionId")
 	tokenString := c.Request.Header.Get("Authorization")
 
 	token, err := authorization.VerifyToken(tokenString)

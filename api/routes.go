@@ -1,35 +1,38 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-
 	"plusz-backend/api/service"
+
+	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Init() {
 	router := gin.Default()
+	defaultPrefix := "/api/v1"
 
-	router.POST("/addScheduleVersion", service.AddScheduleRevision)
+	router.GET(strings.Join([]string{defaultPrefix, "/ScheduleVersion/:revisionId/Classes"}, ""), service.GetRevisionClasses)
 
-	router.POST("/addRoomScheduleVersion", service.AddRoomScheduleRevision)
+	router.POST(strings.Join([]string{defaultPrefix, "/ScheduleVersion/USZ/Student/add"}, ""), service.AddScheduleRevision)
 
-	router.POST("/addLecturerScheduleVersion", service.AddLecturerScheduleRevision)
+	router.POST(strings.Join([]string{defaultPrefix, "/ScheduleVersion/USZ/Room/add"}, ""), service.AddRoomScheduleRevision)
 
-	router.POST("/registerUser", service.RegisterUser)
+	router.POST(strings.Join([]string{defaultPrefix, "/ScheduleVersion/USZ/Lecturer/add"}, ""), service.AddLecturerScheduleRevision)
 
-	router.POST("/authenticateUser", service.AuthenticateUser)
+	router.POST(strings.Join([]string{defaultPrefix, "/Note/add"}, ""), service.AddNote)
 
-	router.POST("/addNote", service.AddNote)
+	router.GET(strings.Join([]string{defaultPrefix, "/Class/:classId/Note"}, ""), service.GetNote)
 
-	router.GET("/getNote", service.GetNote)
+	router.POST(strings.Join([]string{defaultPrefix, "/User/authenticate"}, ""), service.AuthenticateUser)
 
-	router.GET("/getUserSchedules", service.GetUserSchedules)
+	router.POST(strings.Join([]string{defaultPrefix, "/User/register"}, ""), service.RegisterUser)
 
-	router.GET("/getScheduleRevisions", service.GetScheduleRevisions)
+	router.GET(strings.Join([]string{defaultPrefix, "/CurrentUser/Schedule"}, ""), service.GetUserSchedules)
 
-	router.GET("/getRevisionClasses", service.GetRevisionClasses)
+	router.GET(strings.Join([]string{defaultPrefix, "/CurrentUser/Schedule/:scheduleId/ScheduleVersions"}, ""), service.GetScheduleRevisions)
 
-	router.DELETE("/usersAssignedSchedule", service.RemoveScheduleRevisionAssigment)
+	router.DELETE(strings.Join([]string{defaultPrefix, "/CurrentUser/ScheduleVersion/removeAssigment"}, ""), service.RemoveScheduleRevisionAssigment)
 
 	if err := router.Run(); err != nil {
 		panic(err)
