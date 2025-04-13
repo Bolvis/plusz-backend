@@ -17,7 +17,7 @@ const (
 
 func Connect() (*sql.DB, error) {
 	psqlInfo := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		"host=%s port=%d user=%s password=%s dbname=%s",
 		host, port, postgresUser, password, dbname,
 	)
 
