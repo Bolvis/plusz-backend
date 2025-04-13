@@ -27,7 +27,7 @@ func Init() {
 
 	router.DELETE("/usersAssignedSchedule", service.RemoveScheduleRevisionAssigment)
 
-	if err := router.Run(":2013"); err != nil {
+	if err := router.Run(); err != nil {
 		panic(err)
 	}
 }
