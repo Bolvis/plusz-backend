@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	host         = "localhost"
+	host         = "ec2-54-195-190-73.eu-west-1.compute.amazonaws.com"
 	port         = 5432
-	postgresUser = "postgres"
-	password     = "example"
-	dbname       = "plusz-db"
+	postgresUser = "ufqgndot5qvr7m"
+	password     = "p6c7fe848c130f3b09afb2c6a514aa54e329c775e8e8bda95c13dffba72dbc4ea"
+	dbname       = "db98h2g5gecn0e"
 )
 
 func Connect() (*sql.DB, error) {
