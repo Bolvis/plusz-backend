@@ -1,0 +1,6 @@
+DB_HOST="192.168.0.146"
+DB_PORT=5432
+POSTGRES_USER="postgres"
+DB_PASSWORD="example"
+DB_NAME="plusz-db"
+SSL_MODE="disable"

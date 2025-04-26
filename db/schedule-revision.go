@@ -1,6 +1,8 @@
 package db
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type ScheduleRevision struct {
 	Id      string   `json:"id"`
@@ -26,7 +28,6 @@ func GetScheduleRevisionId(scheduleRevision *ScheduleRevision, scheduleId string
 	if err = db.QueryRow(searchQuery, scheduleId, scheduleRevision.Date).Scan(&scheduleRevision.Id); err != nil {
 		isNew = true
 		fmt.Println(err)
-		fmt.Println("inserting a new schedule revision...")
 		insertQuery := `INSERT INTO schedule_revision (schedule_id, date) VALUES ($1, $2) RETURNING id`
 		stmt, err := db.Prepare(insertQuery)
 		defer stmt.Close()
@@ -37,7 +38,6 @@ func GetScheduleRevisionId(scheduleRevision *ScheduleRevision, scheduleId string
 		if err = stmt.QueryRow(scheduleId, scheduleRevision.Date).Scan(&scheduleRevision.Id); err != nil {
 			return scheduleRevision, isNew, err
 		}
-		fmt.Println("inserted successfully")
 	}
 
 	return scheduleRevision, isNew, nil

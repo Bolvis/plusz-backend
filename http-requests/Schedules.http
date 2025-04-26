@@ -1,6 +1,6 @@
 ###
 # @name=Add Schedule Version
-POST localhost:2013/addScheduleVersion
+POST localhost:8080/addScheduleVersion
 Content-Type: application/json
 
 {
@@ -17,13 +17,13 @@ Content-Type: application/json
 ###
 
 # @name=Get Current User Schedules
-GET localhost:2013/getUserSchedules?login=test&password=sci
+GET localhost:8080/getUserSchedules?login=test&password=sci
 Content-Type: application/json
 
 ###
 
 # @name=Add note
-POST localhost:2013/addNote
+POST localhost:8080/addNote
 Content-Type: application/json
 
 {
@@ -39,13 +39,13 @@ Content-Type: application/json
 ###
 
 # @name=Get Note
-GET localhost:2013/getNote?classId=18&login=test&password=sci
+GET localhost:8080/getNote?classId=18&login=test&password=sci
 ###
 
 # @name=Get Classes
-GET localhost:2013/getRevisionClasses?revisionId=1&login=test&password=sci
+GET localhost:8080/getRevisionClasses?revisionId=1&login=test&password=sci
 
 ###
 
 # @name=Delete user schedule relation
-DELETE localhost:2013/usersAssignedSchedule?login=test&password=sci&scheduleId=11
+DELETE localhost:8080/usersAssignedSchedule?login=test&password=sci&scheduleId=11

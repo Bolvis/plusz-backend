@@ -3,22 +3,38 @@ package db
 import (
 	"database/sql"
 	"fmt"
-
 	_ "github.com/lib/pq"
+	"os"
 )
 
-const (
-	host         = "ec2-54-195-190-73.eu-west-1.compute.amazonaws.com"
-	port         = 5432
-	postgresUser = "ufqgndot5qvr7m"
-	password     = "p6c7fe848c130f3b09afb2c6a514aa54e329c775e8e8bda95c13dffba72dbc4ea"
-	dbname       = "db98h2g5gecn0e"
-)
+type Config struct {
+	Host         string
+	Port         string
+	PostgresUser string
+	Password     string
+	DbName       string
+	SSLMode      string
+}
+
+var cfg Config
 
 func Connect() (*sql.DB, error) {
+	if cfg == (Config{}) {
+		cfg = Config{
+			PostgresUser: os.Getenv("POSTGRES_USER"),
+			Password:     os.Getenv("DB_PASSWORD"),
+			DbName:       os.Getenv("DB_NAME"),
+			Host:         os.Getenv("DB_HOST"),
+			Port:         os.Getenv("DB_PORT"),
+			SSLMode:      os.Getenv("SSL_MODE"),
+		}
+	}
+
+	println(cfg.Host)
+
 	psqlInfo := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s",
-		host, port, postgresUser, password, dbname,
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		cfg.Host, cfg.Port, cfg.PostgresUser, cfg.Password, cfg.DbName, cfg.SSLMode,
 	)
 
 	db, err := sql.Open("postgres", psqlInfo)

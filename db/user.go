@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 )
 
 type User struct {
@@ -62,9 +61,6 @@ func AssignUserSchedule(userId string, scheduleId string) error {
 		if err = db.QueryRow(`INSERT INTO user_schedule_relation (user_id, schedule_id) VALUES ($1, $2)`, userId, scheduleId).Err(); err != nil {
 			return err
 		}
-		fmt.Println("Assign schedule(", scheduleId, ") to user(", userId, ")")
-	} else {
-		fmt.Println("User(", userId, ") already assigned to schedule(", scheduleId, ")")
 	}
 
 	return nil
@@ -123,7 +119,7 @@ func GetUserSchedules(userId string) ([]Schedule, error) {
 		if err != nil {
 			return schedules, err
 		}
-		fmt.Println(schedule)
+
 		schedules = append(schedules, schedule)
 	}
 

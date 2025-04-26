@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -27,9 +29,8 @@ func GetScheduleId(schedule Schedule) (Schedule, error) {
 		WHERE field = $1 AND year = $2 AND academic_year = $3 AND semester = $4
 	`
 
-	if err = db.QueryRow(searchQuery, schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester).Scan(&schedule.Id); err != nil {
-		fmt.Println(err)
-		fmt.Println("inserting a new schedule...")
+	if err = db.QueryRow(searchQuery, schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester).Scan(&schedule.Id); errors.Is(err, sql.ErrNoRows) {
+
 		insertQuery := `INSERT INTO schedule (field, year, academic_year, semester) VALUES ($1, $2, $3, $4) RETURNING id`
 		stmt, err := db.Prepare(insertQuery)
 		defer stmt.Close()
@@ -40,7 +41,11 @@ func GetScheduleId(schedule Schedule) (Schedule, error) {
 		if err = stmt.QueryRow(schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester).Scan(&schedule.Id); err != nil {
 			return schedule, err
 		}
-		fmt.Println("inserted successfully")
+	}
+
+	if err != nil {
+		fmt.Println(err)
+		return schedule, err
 	}
 
 	return schedule, nil
