@@ -25,6 +25,7 @@ func GenerateToken(userId string) (string, error) {
 
 	payload, err := json.Marshal(token)
 	if err != nil {
+		fmt.Println(err)
 		return "", err
 	}
 
@@ -45,11 +46,14 @@ func VerifyToken(tokenString string) (Token, error) {
 	token := Token{}
 	parts := strings.Split(tokenString, ".")
 	if len(parts) != 2 {
-		return token, fmt.Errorf("invalid token")
+		err := fmt.Errorf("invalid token")
+		fmt.Println(err)
+		return token, err
 	}
 
 	payload, err := base64.URLEncoding.DecodeString(parts[0])
 	if err != nil {
+		fmt.Println(err)
 		return token, fmt.Errorf("invalid payload encoding")
 	}
 
@@ -59,19 +63,27 @@ func VerifyToken(tokenString string) (Token, error) {
 
 	actualSig, err := base64.StdEncoding.DecodeString(parts[1])
 	if err != nil {
-		return token, fmt.Errorf("invalid signature encoding: %w", err)
+		err := fmt.Errorf("invalid signature encoding: %w", err)
+		fmt.Println(err)
+		return token, err
 	}
 
 	if !hmac.Equal(expectedSig, actualSig) {
-		return token, fmt.Errorf("invalid signature")
+		err := fmt.Errorf("invalid signature")
+		fmt.Println(err)
+		return token, err
 	}
 
 	if err := json.Unmarshal(payload, &token); err != nil {
-		return token, fmt.Errorf("invalid token data: %w", err)
+		err := fmt.Errorf("invalid token data: %w", err)
+		fmt.Println(err)
+		return token, err
 	}
 
 	if time.Now().After(token.ExpiresAt) {
-		return token, fmt.Errorf("token expired")
+		err := fmt.Errorf("token expired")
+		fmt.Println(err)
+		return token, err
 	}
 
 	return token, nil

@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 )
 
 type Note struct {
@@ -17,6 +18,7 @@ func InsertNote(note Note) (Note, error) {
 	defer db.Close()
 
 	if err != nil {
+		fmt.Println(err)
 		return note, err
 	}
 
@@ -31,6 +33,7 @@ func InsertNote(note Note) (Note, error) {
 		stmt, err := db.Prepare(insertQuery)
 		defer stmt.Close()
 		if err != nil {
+			fmt.Println(err)
 			return note, err
 		}
 
@@ -50,6 +53,7 @@ func UpdateNote(note Note) (Note, error) {
 	db, err := Connect()
 	defer db.Close()
 	if err != nil {
+		fmt.Println(err)
 		return note, err
 	}
 
@@ -60,6 +64,7 @@ func UpdateNote(note Note) (Note, error) {
 	).Err()
 
 	if err != nil {
+		fmt.Println(err)
 		return note, err
 	}
 
@@ -70,6 +75,7 @@ func ReadNote(authorId string, classId string) (Note, error) {
 	db, err := Connect()
 	defer db.Close()
 	if err != nil {
+		fmt.Println(err)
 		return Note{}, err
 	}
 
@@ -81,8 +87,10 @@ func ReadNote(authorId string, classId string) (Note, error) {
 	).Scan(&note.Id, &note.NoteBody)
 
 	if errors.Is(err, sql.ErrNoRows) {
+		fmt.Println(err)
 		return Note{}, nil
 	} else if err != nil {
+		fmt.Println(err)
 		return Note{}, err
 	}
 

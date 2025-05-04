@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"plusz-backend/api/authorization"
@@ -17,12 +18,14 @@ func AddNote(c *gin.Context) {
 
 	token, err := authorization.VerifyToken(tokenString)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
 	var request noteRequest
 	if err := c.BindJSON(&request); err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -31,6 +34,7 @@ func AddNote(c *gin.Context) {
 
 	note, err = db.InsertNote(note)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -43,6 +47,7 @@ func GetNote(c *gin.Context) {
 
 	token, err := authorization.VerifyToken(tokenString)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
@@ -52,6 +57,7 @@ func GetNote(c *gin.Context) {
 	var note db.Note
 	note, err = db.ReadNote(token.UserId, classId)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

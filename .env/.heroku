@@ -1,6 +1,0 @@
-DB_HOST="ec2-54-195-190-73.eu-west-1.compute.amazonaws.com"
-DB_PORT=5432
-POSTGRES_USER="ufqgndot5qvr7m"
-DB_PASSWORD="p6c7fe848c130f3b09afb2c6a514aa54e329c775e8e8bda95c13dffba72dbc4ea"
-DB_NAME="db98h2g5gecn0e"
-SSL_MODE="require"

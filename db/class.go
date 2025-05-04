@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"plusz-backend/util"
@@ -24,6 +25,7 @@ func InsertClasses(classes []*Class, scheduleRevisionId string) error {
 	defer db.Close()
 
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -44,6 +46,7 @@ func InsertClasses(classes []*Class, scheduleRevisionId string) error {
 	rows, err := db.Query(insertClasses, classesVals...)
 	defer rows.Close()
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -68,6 +71,7 @@ func GetScheduleRevisionClasses(userId string, scheduleRevisionId string) ([]*Cl
 
 	var classes []*Class
 	if err != nil {
+		fmt.Println(err)
 		return classes, err
 	}
 
@@ -92,6 +96,7 @@ func GetScheduleRevisionClasses(userId string, scheduleRevisionId string) ([]*Cl
 	defer rows.Close()
 
 	if err != nil {
+		fmt.Println(err)
 		return classes, err
 	}
 	for rows.Next() {
@@ -108,6 +113,7 @@ func GetScheduleRevisionClasses(userId string, scheduleRevisionId string) ([]*Cl
 			&class.ClassNumber,
 		)
 		if err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
 		classes = append(classes, &class)

@@ -20,6 +20,7 @@ func GetScheduleId(schedule Schedule) (Schedule, error) {
 	defer db.Close()
 
 	if err != nil {
+		fmt.Println(err)
 		return schedule, err
 	}
 
@@ -35,18 +36,45 @@ func GetScheduleId(schedule Schedule) (Schedule, error) {
 		stmt, err := db.Prepare(insertQuery)
 		defer stmt.Close()
 		if err != nil {
+			fmt.Println(err)
 			return schedule, err
 		}
 
 		if err = stmt.QueryRow(schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester).Scan(&schedule.Id); err != nil {
+			fmt.Println(err)
 			return schedule, err
 		}
 	}
 
+	return schedule, nil
+}
+
+func GetAllSchedules() ([]Schedule, error) {
+	db, err := Connect()
+	defer db.Close()
+
 	if err != nil {
 		fmt.Println(err)
-		return schedule, err
+		return nil, err
 	}
 
-	return schedule, nil
+	var schedules []Schedule
+
+	result, err := db.Query(`SELECT id, field, year, academic_year, semester FROM schedule`)
+	defer result.Close()
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	for result.Next() {
+		var schedule Schedule
+		err = result.Scan(&schedule.Id, &schedule.Field, &schedule.Year, &schedule.AcademicYear, &schedule.Semester)
+		if err != nil {
+			fmt.Println(err)
+		}
+		schedules = append(schedules, schedule)
+	}
+
+	return schedules, nil
 }

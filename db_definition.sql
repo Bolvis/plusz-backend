@@ -14,7 +14,7 @@ create table if not exists "user"
 );
 
 alter table "user"
-    owner to ufqgndot5qvr7m;
+    owner to postgres;
 
 create table if not exists schedule
 (
@@ -28,7 +28,7 @@ create table if not exists schedule
 );
 
 alter table schedule
-    owner to ufqgndot5qvr7m;
+    owner to postgres;
 
 create table if not exists schedule_revision
 (
@@ -42,7 +42,7 @@ create table if not exists schedule_revision
 );
 
 alter table schedule_revision
-    owner to ufqgndot5qvr7m;
+    owner to postgres;
 
 create table if not exists class
 (
@@ -62,7 +62,7 @@ create table if not exists class
 );
 
 alter table class
-    owner to ufqgndot5qvr7m;
+    owner to postgres;
 
 create table if not exists note
 (
@@ -79,7 +79,7 @@ create table if not exists note
 );
 
 alter table note
-    owner to ufqgndot5qvr7m;
+    owner to postgres;
 
 create table if not exists user_schedule_relation
 (
@@ -93,5 +93,5 @@ create table if not exists user_schedule_relation
 );
 
 alter table user_schedule_relation
-    owner to ufqgndot5qvr7m;
+    owner to postgres;
 

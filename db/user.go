@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 )
 
 type User struct {
@@ -16,6 +17,7 @@ func GetUserByLogin(login string) (User, error) {
 	db, err := Connect()
 	defer db.Close()
 	if err != nil {
+		fmt.Println(err)
 		return user, err
 	}
 
@@ -53,14 +55,17 @@ func AssignUserSchedule(userId string, scheduleId string) error {
 	defer db.Close()
 
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
 	id := ""
-	if err = db.QueryRow(`SELECT id FROM user_schedule_relation WHERE user_id = $1 AND schedule_id = $2`, userId, scheduleId).Scan(&id); err != nil {
+	if err = db.QueryRow(`SELECT id FROM user_schedule_relation WHERE user_id = $1 AND schedule_id = $2`, userId, scheduleId).Scan(&id); errors.Is(err, sql.ErrNoRows) {
 		if err = db.QueryRow(`INSERT INTO user_schedule_relation (user_id, schedule_id) VALUES ($1, $2)`, userId, scheduleId).Err(); err != nil {
 			return err
 		}
+	} else if err != nil {
+		return err
 	}
 
 	return nil

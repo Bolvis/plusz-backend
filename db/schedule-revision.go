@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -25,7 +27,7 @@ func GetScheduleRevisionId(scheduleRevision *ScheduleRevision, scheduleId string
 		WHERE schedule_id = $1 AND date = $2
 	`
 
-	if err = db.QueryRow(searchQuery, scheduleId, scheduleRevision.Date).Scan(&scheduleRevision.Id); err != nil {
+	if err = db.QueryRow(searchQuery, scheduleId, scheduleRevision.Date).Scan(&scheduleRevision.Id); errors.Is(err, sql.ErrNoRows) {
 		isNew = true
 		fmt.Println(err)
 		insertQuery := `INSERT INTO schedule_revision (schedule_id, date) VALUES ($1, $2) RETURNING id`
@@ -38,6 +40,8 @@ func GetScheduleRevisionId(scheduleRevision *ScheduleRevision, scheduleId string
 		if err = stmt.QueryRow(scheduleId, scheduleRevision.Date).Scan(&scheduleRevision.Id); err != nil {
 			return scheduleRevision, isNew, err
 		}
+	} else if err != nil {
+		return scheduleRevision, isNew, err
 	}
 
 	return scheduleRevision, isNew, nil
@@ -63,12 +67,14 @@ func GetScheduleRevisions(scheduleId string) ([]*ScheduleRevision, error) {
 	rows, err := db.Query(query, scheduleId)
 	defer rows.Close()
 	if err != nil {
+		fmt.Println(err)
 		return scheduleRevisions, err
 	}
 
 	for rows.Next() {
 		var scheduleRevision ScheduleRevision
 		if err := rows.Scan(&scheduleRevision.Id, &scheduleRevision.Date); err != nil {
+			fmt.Println(err)
 			return scheduleRevisions, err
 		}
 		scheduleRevisions = append(scheduleRevisions, &scheduleRevision)

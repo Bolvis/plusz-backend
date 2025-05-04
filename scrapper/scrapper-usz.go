@@ -87,7 +87,7 @@ func initColly() *colly.Collector {
 	)
 
 	c.OnRequest(func(r *colly.Request) {
-		// without headers usz domain sometimes blocks calls - perhaps as prevention from DDoS
+		// without headers, usz domain sometimes blocks calls - perhaps as prevention from DDoS
 		r.Headers.Set("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64)")
 	})
 
