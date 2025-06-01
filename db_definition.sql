@@ -56,6 +56,7 @@ create table if not exists class
     lecturer             varchar,
     group_number         varchar,
     class_number         varchar,
+    changed              varchar,
     schedule_revision_id integer
         constraint class_schedule_revision_id_fk
             references schedule_revision

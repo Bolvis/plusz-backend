@@ -17,6 +17,7 @@ type Class struct {
 	Lecturer    string         `json:"lecturer"`
 	Group       string         `json:"group"`
 	ClassNumber string         `json:"classNumber"`
+	Changed     string         `json:"changed"`
 	NoteBody    sql.NullString `json:"note"`
 }
 
@@ -31,13 +32,13 @@ func InsertClasses(classes []*Class, scheduleRevisionId string) error {
 
 	insertClasses := `
 		INSERT INTO 
-		    public.class (date, start_hour, end_hour, name, lecturer, group_number, class_number, schedule_revision_id) 
+		    public.class (date, start_hour, end_hour, name, lecturer, group_number, class_number, changed, schedule_revision_id) 
 		VALUES `
 	var classesVals []interface{}
 
 	for _, v := range classes {
-		insertClasses += "(?::date,?::time,?::time,?::varchar,?::varchar,?::varchar,?::varchar,?::integer),"
-		classesVals = append(classesVals, v.Date, v.StartHour, v.EndHour, v.Name, v.Lecturer, v.Group, v.ClassNumber, scheduleRevisionId)
+		insertClasses += "(?::date,?::time,?::time,?::varchar,?::varchar,?::varchar,?::varchar,?::varchar,?::integer),"
+		classesVals = append(classesVals, v.Date, v.StartHour, v.EndHour, v.Name, v.Lecturer, v.Group, v.ClassNumber, v.Changed, scheduleRevisionId)
 	}
 	insertClasses = strings.TrimSuffix(insertClasses, ",")
 	insertClasses += " RETURNING id"

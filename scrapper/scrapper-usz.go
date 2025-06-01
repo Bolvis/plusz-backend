@@ -2,7 +2,6 @@ package scrapper
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -54,20 +53,8 @@ func ScrapUSZ(url string, schedule db.Schedule) (db.Schedule, error) {
 
 	metadataCollector.OnHTML("span", func(e *colly.HTMLElement) {
 		if strings.Contains(e.Text, "Data aktualizacji:") {
-			dateArray := strings.Split(strings.TrimSpace(strings.Split(e.Text, ":")[1]), ".")
-			year, err := strconv.Atoi(dateArray[2])
-			if err != nil {
-				fmt.Println(err)
-			}
-			month, err := strconv.Atoi(dateArray[1])
-			if err != nil {
-				fmt.Println(err)
-			}
-			day, err := strconv.Atoi(dateArray[0])
-			if err != nil {
-				fmt.Println(err)
-			}
-			scheduleRevision.Date = time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+			scheduleRevision.Date =
+				util.ConvertToDate(strings.TrimSpace(strings.Split(e.Text, ":")[1]), ".").Format(time.DateOnly)
 		}
 	})
 

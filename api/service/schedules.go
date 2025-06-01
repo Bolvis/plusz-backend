@@ -1,11 +1,16 @@
 package service
 
 import (
+	"database/sql"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
-	"plusz-backend/api/authorization"
+	"plusz-backend/util"
+	"slices"
 	"strings"
 
+	"plusz-backend/api/authorization"
 	"plusz-backend/db"
 	"plusz-backend/scrapper"
 
@@ -15,6 +20,17 @@ import (
 type scheduleRequest struct {
 	Year  string `json:"year"`
 	Field string `json:"field"`
+}
+
+type FieldChanges struct {
+	ChangeType string
+	Changes    []FieldChange
+}
+
+type FieldChange struct {
+	FieldName string
+	Previous  string
+	Current   string
 }
 
 func AddScheduleRevision(c *gin.Context) {
@@ -41,7 +57,7 @@ func AddScheduleRevision(c *gin.Context) {
 		return
 	}
 
-	if err := db.AssignUserSchedule(token.UserId, schedule.Id); err != nil {
+	if err = db.AssignUserSchedule(token.UserId, schedule.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -74,6 +90,11 @@ func ScrapSchedule(field string, year string) (db.Schedule, error) {
 	}
 
 	if isScheduleRevisionNew {
+		if err = ProcessBeforeInsert(&schedule); err != nil {
+			fmt.Println(err)
+			return schedule, err
+		}
+
 		if err = db.InsertClasses(schedule.ScheduleRevisions[0].Classes, schedule.ScheduleRevisions[0].Id); err != nil {
 			fmt.Println(err)
 			return schedule, err
@@ -169,4 +190,122 @@ func RemoveScheduleRevisionAssigment(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func ProcessBeforeInsert(newSchedule *db.Schedule) error {
+	previousRevision, err := db.GetPreviousRevision(newSchedule.Id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	} else if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	var addedClasses []*db.Class
+	var foundedMatchesIds []string
+	for _, newClass := range newSchedule.ScheduleRevisions[0].Classes {
+		changes := FieldChanges{}
+		newClassDate := util.ConvertToDate(newClass.Date, "/")
+		isNew := true
+		for _, previousClass := range previousRevision.Classes {
+			foundedMatchesIds = append(foundedMatchesIds, previousClass.Id)
+			previousClassDate := util.ConvertToDate(previousClass.Date, "-")
+
+			if previousClassDate == newClassDate && previousClass.Name == newClass.Name {
+				isNew = false
+				previousClassStartHourFormatted := util.FormatTime(previousClass.StartHour)
+				previousClassEndHourFormatted := util.FormatTime(previousClass.EndHour)
+
+				if previousClassStartHourFormatted != newClass.StartHour {
+					changes.Changes = append(
+						changes.Changes,
+						FieldChange{
+							FieldName: "StartHour",
+							Previous:  previousClassStartHourFormatted,
+							Current:   newClass.StartHour,
+						},
+					)
+				}
+
+				if previousClassEndHourFormatted != newClass.EndHour {
+					changes.Changes = append(
+						changes.Changes,
+						FieldChange{
+							FieldName: "EndHour",
+							Previous:  previousClassEndHourFormatted,
+							Current:   newClass.EndHour,
+						},
+					)
+				}
+
+				if previousClass.ClassNumber != newClass.ClassNumber {
+					changes.Changes = append(
+						changes.Changes,
+						FieldChange{
+							FieldName: "ClassNumber",
+							Previous:  previousClass.ClassNumber,
+							Current:   newClass.ClassNumber,
+						},
+					)
+				}
+
+				if previousClass.Group != newClass.Group {
+					changes.Changes = append(
+						changes.Changes,
+						FieldChange{
+							FieldName: "Group",
+							Previous:  previousClass.Group,
+							Current:   newClass.Group,
+						},
+					)
+				}
+
+				if previousClass.Lecturer != newClass.Lecturer {
+					changes.Changes = append(
+						changes.Changes,
+						FieldChange{
+							FieldName: "Lecturer",
+							Previous:  previousClass.Lecturer,
+							Current:   newClass.Lecturer,
+						},
+					)
+				}
+
+				break
+			}
+		}
+
+		if len(changes.Changes) > 0 {
+			changes.ChangeType = "changed"
+		} else if isNew {
+			addedClasses = append(addedClasses, newClass)
+			changes.ChangeType = "added"
+		} else {
+			changes.ChangeType = "none"
+		}
+
+		changesBytes, err := json.Marshal(changes)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+		newClass.Changed = string(changesBytes)
+	}
+
+	deleteChange := FieldChanges{
+		ChangeType: "delete",
+	}
+	for _, previousClass := range previousRevision.Classes {
+		if !slices.Contains(foundedMatchesIds, previousClass.Id) {
+			deleteChangeBytes, err := json.Marshal(deleteChange)
+			if err != nil {
+				fmt.Println(err)
+				return err
+			}
+			previousClass.Changed = string(deleteChangeBytes)
+			newSchedule.ScheduleRevisions[0].Classes = append(newSchedule.ScheduleRevisions[0].Classes, previousClass)
+		}
+	}
+
+	return nil
 }

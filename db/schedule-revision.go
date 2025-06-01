@@ -82,3 +82,92 @@ func GetScheduleRevisions(scheduleId string) ([]*ScheduleRevision, error) {
 
 	return scheduleRevisions, nil
 }
+
+func GetPreviousRevision(scheduleId string) (ScheduleRevision, error) {
+	db, err := Connect()
+	defer db.Close()
+
+	var scheduleRevision ScheduleRevision
+	if err != nil {
+		return scheduleRevision, err
+	}
+
+	queryRevision := `
+		SELECT 
+			id,
+			date
+		FROM schedule_revision
+		WHERE schedule_id = $1
+		ORDER BY date DESC
+		LIMIT 2
+	`
+
+	rows, err := db.Query(queryRevision, scheduleId)
+	defer rows.Close()
+	if err != nil {
+		fmt.Println(err)
+		return scheduleRevision, err
+	}
+
+	var revisions []ScheduleRevision
+	for rows.Next() {
+		var revision ScheduleRevision
+		if err = rows.Scan(
+			&revision.Id,
+			&revision.Date,
+		); err != nil {
+			fmt.Println(err)
+			return scheduleRevision, err
+		}
+		revisions = append(revisions, revision)
+	}
+
+	if len(revisions) == 1 {
+		return revisions[0], nil
+	}
+
+	scheduleRevision = revisions[1]
+
+	queryClasses := `
+		SELECT
+		    id,
+			date,
+			start_hour,
+			end_hour,
+			name,
+			lecturer,
+			group_number,
+			class_number,
+			changed
+		FROM class
+		WHERE schedule_revision_id = $1
+	`
+
+	rows, err = db.Query(queryClasses, scheduleRevision.Id)
+	defer rows.Close()
+	if err != nil {
+		fmt.Println(err)
+		return scheduleRevision, err
+	}
+
+	for rows.Next() {
+		var class Class
+		if err = rows.Scan(
+			&class.Id,
+			&class.Date,
+			&class.StartHour,
+			&class.EndHour,
+			&class.Name,
+			&class.Lecturer,
+			&class.Group,
+			&class.ClassNumber,
+			&class.Changed,
+		); err != nil {
+			fmt.Println(err)
+			return scheduleRevision, err
+		}
+		scheduleRevision.Classes = append(scheduleRevision.Classes, &class)
+	}
+
+	return scheduleRevision, nil
+}
