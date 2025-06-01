@@ -23,14 +23,14 @@ type scheduleRequest struct {
 }
 
 type FieldChanges struct {
-	ChangeType string
-	Changes    []FieldChange
+	ChangeType string        `json:"changeType"`
+	Changes    []FieldChange `json:"changes"`
 }
 
 type FieldChange struct {
-	FieldName string
-	Previous  string
-	Current   string
+	FieldName string `json:"fieldName"`
+	Previous  string `json:"previous"`
+	Current   string `json:"current"`
 }
 
 func AddScheduleRevision(c *gin.Context) {
