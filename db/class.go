@@ -86,7 +86,8 @@ func GetScheduleRevisionClasses(userId string, scheduleRevisionId string) ([]*Cl
 				name, 
 				lecturer, 
 				group_number, 
-				class_number 
+				class_number,
+				changed
 			FROM class c
 			LEFT JOIN note n ON n.class_id = c.id AND n.author_id = $1
 			WHERE schedule_revision_id = $2
@@ -112,6 +113,7 @@ func GetScheduleRevisionClasses(userId string, scheduleRevisionId string) ([]*Cl
 			&class.Lecturer,
 			&class.Group,
 			&class.ClassNumber,
+			&class.Changed,
 		)
 		if err != nil {
 			fmt.Println(err)
