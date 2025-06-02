@@ -28,9 +28,8 @@ type FieldChanges struct {
 }
 
 type FieldChange struct {
-	FieldName string `json:"fieldName"`
-	Previous  string `json:"previous"`
-	Current   string `json:"current"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 func AddScheduleRevision(c *gin.Context) {
@@ -203,10 +202,11 @@ func ProcessBeforeInsert(newSchedule *db.Schedule) error {
 
 	var addedClasses []*db.Class
 	var foundedMatchesIds []string
+	isNew := len(previousRevision.Classes) > 0
 	for _, newClass := range newSchedule.ScheduleRevisions[0].Classes {
 		changes := FieldChanges{}
 		newClassDate := util.ConvertToDate(newClass.Date, "/")
-		isNew := true
+
 		for _, previousClass := range previousRevision.Classes {
 			foundedMatchesIds = append(foundedMatchesIds, previousClass.Id)
 			previousClassDate := util.ConvertToDate(previousClass.Date, "-")
@@ -220,9 +220,8 @@ func ProcessBeforeInsert(newSchedule *db.Schedule) error {
 					changes.Changes = append(
 						changes.Changes,
 						FieldChange{
-							FieldName: "StartHour",
-							Previous:  previousClassStartHourFormatted,
-							Current:   newClass.StartHour,
+							Key:   "StartHour",
+							Value: previousClassStartHourFormatted,
 						},
 					)
 				}
@@ -231,9 +230,8 @@ func ProcessBeforeInsert(newSchedule *db.Schedule) error {
 					changes.Changes = append(
 						changes.Changes,
 						FieldChange{
-							FieldName: "EndHour",
-							Previous:  previousClassEndHourFormatted,
-							Current:   newClass.EndHour,
+							Key:   "EndHour",
+							Value: previousClassEndHourFormatted,
 						},
 					)
 				}
@@ -242,9 +240,8 @@ func ProcessBeforeInsert(newSchedule *db.Schedule) error {
 					changes.Changes = append(
 						changes.Changes,
 						FieldChange{
-							FieldName: "ClassNumber",
-							Previous:  previousClass.ClassNumber,
-							Current:   newClass.ClassNumber,
+							Key:   "ClassNumber",
+							Value: previousClass.ClassNumber,
 						},
 					)
 				}
@@ -253,9 +250,8 @@ func ProcessBeforeInsert(newSchedule *db.Schedule) error {
 					changes.Changes = append(
 						changes.Changes,
 						FieldChange{
-							FieldName: "Group",
-							Previous:  previousClass.Group,
-							Current:   newClass.Group,
+							Key:   "Group",
+							Value: previousClass.Group,
 						},
 					)
 				}
@@ -264,9 +260,8 @@ func ProcessBeforeInsert(newSchedule *db.Schedule) error {
 					changes.Changes = append(
 						changes.Changes,
 						FieldChange{
-							FieldName: "Lecturer",
-							Previous:  previousClass.Lecturer,
-							Current:   newClass.Lecturer,
+							Key:   "Lecturer",
+							Value: previousClass.Lecturer,
 						},
 					)
 				}
@@ -303,6 +298,8 @@ func ProcessBeforeInsert(newSchedule *db.Schedule) error {
 				return err
 			}
 			previousClass.Changed = string(deleteChangeBytes)
+			previousClass.StartHour = util.FormatTime(previousClass.StartHour)
+			previousClass.EndHour = util.FormatTime(previousClass.EndHour)
 			newSchedule.ScheduleRevisions[0].Classes = append(newSchedule.ScheduleRevisions[0].Classes, previousClass)
 		}
 	}
