@@ -11,6 +11,10 @@ func Init() {
 
 	router.POST("/addScheduleVersion", service.AddScheduleRevision)
 
+	router.POST("/addRoomScheduleVersion", service.AddRoomScheduleRevision)
+
+	router.POST("/addLecturerScheduleVersion", service.AddLecturerScheduleRevision)
+
 	router.POST("/registerUser", service.RegisterUser)
 
 	router.POST("/authenticateUser", service.AuthenticateUser)

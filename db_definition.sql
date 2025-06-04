@@ -24,7 +24,8 @@ create table if not exists schedule
     year          varchar,
     field         varchar,
     academic_year varchar,
-    semester      varchar
+    semester      varchar,
+    schedule_type    varchar
 );
 
 alter table schedule

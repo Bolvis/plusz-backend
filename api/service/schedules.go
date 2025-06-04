@@ -22,6 +22,15 @@ type scheduleRequest struct {
 	Field string `json:"field"`
 }
 
+type roomScheduleRequest struct {
+	Name string `json:"name"`
+}
+
+type lecturerScheduleRequest struct {
+	Name    string `json:"name"`
+	Surname string `json:"surname"`
+}
+
 type FieldChanges struct {
 	ChangeType string        `json:"changeType"`
 	Changes    []FieldChange `json:"changes"`
@@ -49,7 +58,7 @@ func AddScheduleRevision(c *gin.Context) {
 		return
 	}
 
-	schedule, err := ScrapSchedule(request.Field, request.Year)
+	schedule, err := ScrapSchedule(request.Field, request.Year, "USZ")
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -64,18 +73,116 @@ func AddScheduleRevision(c *gin.Context) {
 	c.JSON(http.StatusOK, schedule)
 }
 
-func ScrapSchedule(field string, year string) (db.Schedule, error) {
-	url := strings.Join([]string{
-		"https://efz.usz.edu.pl/wp-content/include-me/plany_mick/zajecia_xml.php?kierunek=",
-		field,
-		"&rok=",
-		year,
-	}, "")
+func AddRoomScheduleRevision(c *gin.Context) {
+	var request roomScheduleRequest
+	tokenString := c.Request.Header.Get("Authorization")
 
-	schedule := db.Schedule{Field: field, Year: year}
-	schedule, err := scrapper.ScrapUSZ(url, schedule)
+	if err := c.BindJSON(&request); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := authorization.VerifyToken(tokenString)
 	if err != nil {
-		return schedule, err
+		fmt.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	schedule, err := ScrapSchedule(request.Name, "", "USZRoom")
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err = db.AssignUserSchedule(token.UserId, schedule.Id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, schedule)
+}
+
+func AddLecturerScheduleRevision(c *gin.Context) {
+	var request lecturerScheduleRequest
+	tokenString := c.Request.Header.Get("Authorization")
+
+	if err := c.BindJSON(&request); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := authorization.VerifyToken(tokenString)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	schedule, err := ScrapSchedule(request.Name, request.Surname, "USZLecturer")
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err = db.AssignUserSchedule(token.UserId, schedule.Id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, schedule)
+}
+
+func ScrapSchedule(queryField1 string, queryField2 string, scrapperType string) (db.Schedule, error) {
+	var url string
+	var err error
+	var schedule db.Schedule
+
+	if scrapperType == "USZ" {
+		schedule = db.Schedule{Field: queryField1, Year: queryField2, ScheduleType: scrapperType}
+		url = strings.Join([]string{
+			"https://efz.usz.edu.pl/wp-content/include-me/plany_mick/zajecia_xml.php?kierunek=",
+			queryField1,
+			"&rok=",
+			queryField2,
+		}, "")
+		schedule, err = scrapper.ScrapUSZ(url, schedule)
+		if err != nil {
+			return schedule, err
+		}
+	}
+
+	if scrapperType == "USZRoom" {
+		formattedName := strings.ReplaceAll(queryField1, "_", " ")
+		schedule = db.Schedule{Field: formattedName, Year: queryField2, ScheduleType: scrapperType}
+		url = strings.Join([]string{
+			"https://efz.usz.edu.pl/wp-content/include-me/plany_mick/sala_zajecia_xml.php?nazw=",
+			queryField1,
+		}, "")
+		schedule, err = scrapper.ScrapUSZRoom(url, schedule, strings.ReplaceAll(formattedName, "_", " "))
+		if err != nil {
+			return schedule, err
+		}
+	}
+
+	if scrapperType == "USZLecturer" {
+		formattedName := strings.ReplaceAll(queryField1, "%20", " ")
+		schedule = db.Schedule{Field: formattedName, Year: queryField2, ScheduleType: scrapperType}
+		url = strings.Join([]string{
+			"https://efz.usz.edu.pl/wp-content/include-me/plany_mick/pracow_zajecia_xml.php?nazw=",
+			queryField1,
+			"&nazw1=",
+			queryField2,
+		}, "")
+		schedule, err = scrapper.ScrapUSZLecturer(url, schedule, strings.Join(
+			[]string{formattedName, queryField2}, " "))
+		if err != nil {
+			return schedule, err
+		}
 	}
 
 	if schedule, err = db.GetScheduleId(schedule); err != nil {

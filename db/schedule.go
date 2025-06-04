@@ -12,6 +12,7 @@ type Schedule struct {
 	Year              string              `json:"year"`
 	AcademicYear      string              `json:"academic_year"`
 	Semester          string              `json:"semester"`
+	ScheduleType      string              `json:"schedule_type"`
 	ScheduleRevisions []*ScheduleRevision `json:"schedule_revisions"`
 }
 
@@ -32,7 +33,7 @@ func GetScheduleId(schedule Schedule) (Schedule, error) {
 
 	if err = db.QueryRow(searchQuery, schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester).Scan(&schedule.Id); errors.Is(err, sql.ErrNoRows) {
 
-		insertQuery := `INSERT INTO schedule (field, year, academic_year, semester) VALUES ($1, $2, $3, $4) RETURNING id`
+		insertQuery := `INSERT INTO schedule (field, year, academic_year, semester, schedule_type) VALUES ($1, $2, $3, $4, $5) RETURNING id`
 		stmt, err := db.Prepare(insertQuery)
 		defer stmt.Close()
 		if err != nil {
@@ -40,7 +41,7 @@ func GetScheduleId(schedule Schedule) (Schedule, error) {
 			return schedule, err
 		}
 
-		if err = stmt.QueryRow(schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester).Scan(&schedule.Id); err != nil {
+		if err = stmt.QueryRow(schedule.Field, schedule.Year, schedule.AcademicYear, schedule.Semester, schedule.ScheduleType).Scan(&schedule.Id); err != nil {
 			fmt.Println(err)
 			return schedule, err
 		}
@@ -60,7 +61,7 @@ func GetAllSchedules() ([]Schedule, error) {
 
 	var schedules []Schedule
 
-	result, err := db.Query(`SELECT id, field, year, academic_year, semester FROM schedule`)
+	result, err := db.Query(`SELECT id, field, year, academic_year, semester, schedule_type FROM schedule`)
 	defer result.Close()
 	if err != nil {
 		fmt.Println(err)
@@ -69,7 +70,7 @@ func GetAllSchedules() ([]Schedule, error) {
 
 	for result.Next() {
 		var schedule Schedule
-		err = result.Scan(&schedule.Id, &schedule.Field, &schedule.Year, &schedule.AcademicYear, &schedule.Semester)
+		err = result.Scan(&schedule.Id, &schedule.Field, &schedule.Year, &schedule.AcademicYear, &schedule.Semester, &schedule.ScheduleType)
 		if err != nil {
 			fmt.Println(err)
 		}
