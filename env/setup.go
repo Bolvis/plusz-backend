@@ -21,7 +21,7 @@ func Load() {
 		if err := os.Setenv("DB_PASSWORD", "example"); err != nil {
 			panic(err)
 		}
-		if err := os.Setenv("DB_NAME", "plusz-db"); err != nil {
+		if err := os.Setenv("DB_NAME", "plusz_db"); err != nil {
 			panic(err)
 		}
 		if err := os.Setenv("SSL_MODE", "disable"); err != nil {
