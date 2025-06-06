@@ -52,7 +52,7 @@ func GetNote(c *gin.Context) {
 		return
 	}
 
-	classId := c.Query("classId")
+	classId := c.Param("classId")
 
 	var note db.Note
 	note, err = db.ReadNote(token.UserId, classId)
