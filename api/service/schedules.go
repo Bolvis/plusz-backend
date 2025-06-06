@@ -395,7 +395,7 @@ func ProcessBeforeInsert(newSchedule *db.Schedule) error {
 	}
 
 	deleteChange := FieldChanges{
-		ChangeType: "delete",
+		ChangeType: "deleted",
 	}
 	for _, previousClass := range previousRevision.Classes {
 		if !slices.Contains(foundedMatchesIds, previousClass.Id) {
