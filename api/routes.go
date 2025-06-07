@@ -32,7 +32,7 @@ func Init() {
 
 	router.GET(strings.Join([]string{defaultPrefix, "/CurrentUser/Schedule/:scheduleId/ScheduleVersions"}, ""), service.GetScheduleRevisions)
 
-	router.DELETE(strings.Join([]string{defaultPrefix, "/CurrentUser/Schedule/:scheduleId/removeAssigment"}, ""), service.RemoveScheduleRevisionAssigment)
+	router.DELETE(strings.Join([]string{defaultPrefix, "/CurrentUser/Schedule/:scheduleId/removeAssignment"}, ""), service.RemoveScheduleRevisionAssignment)
 
 	if err := router.Run(); err != nil {
 		panic(err)

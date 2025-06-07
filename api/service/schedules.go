@@ -278,7 +278,7 @@ func GetRevisionClasses(c *gin.Context) {
 	c.JSON(http.StatusOK, revision)
 }
 
-func RemoveScheduleRevisionAssigment(c *gin.Context) {
+func RemoveScheduleRevisionAssignment(c *gin.Context) {
 	scheduleId := c.Param("scheduleId")
 	tokenString := c.Request.Header.Get("Authorization")
 
@@ -289,7 +289,7 @@ func RemoveScheduleRevisionAssigment(c *gin.Context) {
 		return
 	}
 
-	if err := db.RemoveUserScheduleAssigment(token.UserId, scheduleId); err != nil {
+	if err := db.RemoveUserScheduleAssignment(token.UserId, scheduleId); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -71,7 +71,7 @@ func AssignUserSchedule(userId string, scheduleId string) error {
 	return nil
 }
 
-func RemoveUserScheduleAssigment(userId string, scheduleId string) error {
+func RemoveUserScheduleAssignment(userId string, scheduleId string) error {
 	db, err := Connect()
 	if err != nil {
 		return err
