@@ -307,18 +307,17 @@ func ProcessBeforeInsert(newSchedule *db.Schedule) error {
 		return err
 	}
 
-	var addedClasses []*db.Class
 	var foundedMatchesIds []string
-	isNew := len(previousRevision.Classes) > 0
 	for _, newClass := range newSchedule.ScheduleRevisions[0].Classes {
 		changes := FieldChanges{}
 		newClassDate := util.ConvertToDate(newClass.Date, "/")
+		isNew := len(previousRevision.Classes) > 0
 
 		for _, previousClass := range previousRevision.Classes {
-			foundedMatchesIds = append(foundedMatchesIds, previousClass.Id)
 			previousClassDate := util.ConvertToDate(previousClass.Date, "-")
 
 			if previousClassDate == newClassDate && previousClass.Name == newClass.Name {
+				foundedMatchesIds = append(foundedMatchesIds, previousClass.Id)
 				isNew = false
 				previousClassStartHourFormatted := util.FormatTime(previousClass.StartHour)
 				previousClassEndHourFormatted := util.FormatTime(previousClass.EndHour)
@@ -380,7 +379,6 @@ func ProcessBeforeInsert(newSchedule *db.Schedule) error {
 		if len(changes.Changes) > 0 {
 			changes.ChangeType = "changed"
 		} else if isNew {
-			addedClasses = append(addedClasses, newClass)
 			changes.ChangeType = "added"
 		} else {
 			changes.ChangeType = "none"
