@@ -7,8 +7,7 @@ func Load() {
 
 	if env == "" {
 		panic("environment variable not set")
-	}
-	if env == "dev" {
+	} else if env == "dev" {
 		if err := os.Setenv("DB_HOST", "localhost"); err != nil {
 			panic(err)
 		}
