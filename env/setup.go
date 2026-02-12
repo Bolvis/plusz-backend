@@ -5,9 +5,10 @@ import "os"
 func Load() {
 	env := os.Getenv("ENV")
 
-	if env == "" {
+	switch env {
+	case "":
 		panic("environment variable not set")
-	} else if env == "dev" {
+	case "dev":
 		if err := os.Setenv("DB_HOST", "localhost"); err != nil {
 			panic(err)
 		}
@@ -26,7 +27,7 @@ func Load() {
 		if err := os.Setenv("SSL_MODE", "disable"); err != nil {
 			panic(err)
 		}
-	} else if env == "prod" {
+	case "prod":
 		if err := os.Setenv("DB_HOST", "ec2-54-195-190-73.eu-west-1.compute.amazonaws.com"); err != nil {
 			panic(err)
 		}
