@@ -27,6 +27,7 @@ func Load() {
 		if err := os.Setenv("SSL_MODE", "disable"); err != nil {
 			panic(err)
 		}
+		// the "prod" access is expired anyway 
 	case "prod":
 		if err := os.Setenv("DB_HOST", "ec2-54-195-190-73.eu-west-1.compute.amazonaws.com"); err != nil {
 			panic(err)
