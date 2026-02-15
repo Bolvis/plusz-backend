@@ -6,14 +6,36 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Token struct {
 	UserId    string    `json:"userId"`
 	IssuedAt  time.Time `json:"issuedAt"`
 	ExpiresAt time.Time `json:"expiresAt"`
+}
+
+func AuthMiddleware(c *gin.Context) {
+	tokenString := c.Request.Header.Get("Authorization")
+
+	if tokenString == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "No authorization header provided"})
+		c.Abort()
+		return
+	}
+
+	token, err := VerifyToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		c.Abort()
+		return
+	}
+
+	c.Set("UserId", token.UserId)
 }
 
 func GenerateToken(userId string) (string, error) {

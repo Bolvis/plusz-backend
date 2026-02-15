@@ -2,10 +2,10 @@ package service
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
-	"plusz-backend/api/authorization"
 	"plusz-backend/db"
+
+	"github.com/gin-gonic/gin"
 )
 
 type noteRequest struct {
@@ -14,14 +14,7 @@ type noteRequest struct {
 }
 
 func AddNote(c *gin.Context) {
-	tokenString := c.Request.Header.Get("Authorization")
-
-	token, err := authorization.VerifyToken(tokenString)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
+	userId := c.MustGet("UserId").(string)
 
 	var request noteRequest
 	if err := c.BindJSON(&request); err != nil {
@@ -30,8 +23,8 @@ func AddNote(c *gin.Context) {
 		return
 	}
 
-	note := db.Note{ClassId: request.ClassId, NoteBody: request.NoteBody, AuthorId: token.UserId}
-
+	note := db.Note{ClassId: request.ClassId, NoteBody: request.NoteBody, AuthorId: userId}
+	var err error
 	note, err = db.InsertNote(note)
 	if err != nil {
 		fmt.Println(err)
@@ -43,19 +36,10 @@ func AddNote(c *gin.Context) {
 }
 
 func GetNote(c *gin.Context) {
-	tokenString := c.Request.Header.Get("Authorization")
-
-	token, err := authorization.VerifyToken(tokenString)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
-
+	userId := c.MustGet("UserId").(string)
 	classId := c.Param("classId")
 
-	var note db.Note
-	note, err = db.ReadNote(token.UserId, classId)
+	note, err := db.ReadNote(userId, classId)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

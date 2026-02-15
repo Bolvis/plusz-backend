@@ -10,7 +10,6 @@ import (
 	"slices"
 	"strings"
 
-	"plusz-backend/api/authorization"
 	"plusz-backend/db"
 	"plusz-backend/scrapper"
 
@@ -43,18 +42,10 @@ type FieldChange struct {
 
 func AddScheduleRevision(c *gin.Context) {
 	var request scheduleRequest
-	tokenString := c.Request.Header.Get("Authorization")
 
 	if err := c.BindJSON(&request); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	token, err := authorization.VerifyToken(tokenString)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -65,7 +56,8 @@ func AddScheduleRevision(c *gin.Context) {
 		return
 	}
 
-	if err = db.AssignUserSchedule(token.UserId, schedule.Id); err != nil {
+	userId := c.MustGet("UserId").(string)
+	if err = db.AssignUserSchedule(userId, schedule.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -75,18 +67,10 @@ func AddScheduleRevision(c *gin.Context) {
 
 func AddRoomScheduleRevision(c *gin.Context) {
 	var request roomScheduleRequest
-	tokenString := c.Request.Header.Get("Authorization")
 
 	if err := c.BindJSON(&request); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	token, err := authorization.VerifyToken(tokenString)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -97,7 +81,8 @@ func AddRoomScheduleRevision(c *gin.Context) {
 		return
 	}
 
-	if err = db.AssignUserSchedule(token.UserId, schedule.Id); err != nil {
+	userId := c.MustGet("UserId").(string)
+	if err = db.AssignUserSchedule(userId, schedule.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -107,18 +92,10 @@ func AddRoomScheduleRevision(c *gin.Context) {
 
 func AddLecturerScheduleRevision(c *gin.Context) {
 	var request lecturerScheduleRequest
-	tokenString := c.Request.Header.Get("Authorization")
 
 	if err := c.BindJSON(&request); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	token, err := authorization.VerifyToken(tokenString)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -129,7 +106,8 @@ func AddLecturerScheduleRevision(c *gin.Context) {
 		return
 	}
 
-	if err = db.AssignUserSchedule(token.UserId, schedule.Id); err != nil {
+	userId := c.MustGet("UserId").(string)
+	if err = db.AssignUserSchedule(userId, schedule.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -211,16 +189,9 @@ func ScrapSchedule(queryField1 string, queryField2 string, scrapperType string) 
 }
 
 func GetUserSchedules(c *gin.Context) {
-	tokenString := c.Request.Header.Get("Authorization")
+	userId := c.MustGet("UserId").(string)
 
-	token, err := authorization.VerifyToken(tokenString)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
-
-	schedules, err := db.GetUserSchedules(token.UserId)
+	schedules, err := db.GetUserSchedules(userId)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -231,17 +202,10 @@ func GetUserSchedules(c *gin.Context) {
 }
 
 func GetScheduleRevisions(c *gin.Context) {
-	tokenString := c.Request.Header.Get("Authorization")
-
-	_, err := authorization.VerifyToken(tokenString)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
-
+	var err error
 	scheduleId := c.Param("scheduleId")
 	schedule := db.Schedule{Id: scheduleId}
+
 	var scheduleRevisions []*db.ScheduleRevision
 	if scheduleRevisions, err = db.GetScheduleRevisions(schedule.Id); err != nil {
 		fmt.Println(err)
@@ -256,18 +220,12 @@ func GetScheduleRevisions(c *gin.Context) {
 
 func GetRevisionClasses(c *gin.Context) {
 	revisionId := c.Param("revisionId")
-	tokenString := c.Request.Header.Get("Authorization")
-
-	token, err := authorization.VerifyToken(tokenString)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
+	userId := c.MustGet("UserId").(string)
 
 	revision := db.ScheduleRevision{Id: revisionId}
 	var classes []*db.Class
-	if classes, err = db.GetScheduleRevisionClasses(token.UserId, revision.Id); err != nil {
+	var err error
+	if classes, err = db.GetScheduleRevisionClasses(userId, revision.Id); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -280,16 +238,9 @@ func GetRevisionClasses(c *gin.Context) {
 
 func RemoveScheduleRevisionAssignment(c *gin.Context) {
 	scheduleId := c.Param("scheduleId")
-	tokenString := c.Request.Header.Get("Authorization")
+	userId := c.MustGet("UserId").(string)
 
-	token, err := authorization.VerifyToken(tokenString)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := db.RemoveUserScheduleAssignment(token.UserId, scheduleId); err != nil {
+	if err := db.RemoveUserScheduleAssignment(userId, scheduleId); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

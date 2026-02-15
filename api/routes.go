@@ -1,9 +1,8 @@
 package api
 
 import (
+	"plusz-backend/api/authorization"
 	"plusz-backend/api/service"
-
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,27 +11,33 @@ func Init() {
 	router := gin.Default()
 	defaultPrefix := "/api/v1"
 
-	router.GET(strings.Join([]string{defaultPrefix, "/ScheduleVersion/:revisionId/Classes"}, ""), service.GetRevisionClasses)
+	openRoutes := router.Group(defaultPrefix)
 
-	router.POST(strings.Join([]string{defaultPrefix, "/ScheduleVersion/USZ/Student/add"}, ""), service.AddScheduleRevision)
+	openRoutes.POST("/User/authenticate", service.AuthenticateUser)
 
-	router.POST(strings.Join([]string{defaultPrefix, "/ScheduleVersion/USZ/Room/add"}, ""), service.AddRoomScheduleRevision)
+	openRoutes.POST("/User/register", service.RegisterUser)
 
-	router.POST(strings.Join([]string{defaultPrefix, "/ScheduleVersion/USZ/Lecturer/add"}, ""), service.AddLecturerScheduleRevision)
+	protectedRoutes := router.Group(defaultPrefix)
 
-	router.POST(strings.Join([]string{defaultPrefix, "/Note/add"}, ""), service.AddNote)
+	protectedRoutes.Use(authorization.AuthMiddleware)
 
-	router.GET(strings.Join([]string{defaultPrefix, "/Class/:classId/Note"}, ""), service.GetNote)
+	protectedRoutes.GET("/ScheduleVersion/:revisionId/Classes", service.GetRevisionClasses)
 
-	router.POST(strings.Join([]string{defaultPrefix, "/User/authenticate"}, ""), service.AuthenticateUser)
+	protectedRoutes.POST("/ScheduleVersion/USZ/Student/add", service.AddScheduleRevision)
 
-	router.POST(strings.Join([]string{defaultPrefix, "/User/register"}, ""), service.RegisterUser)
+	protectedRoutes.POST("/ScheduleVersion/USZ/Room/add", service.AddRoomScheduleRevision)
 
-	router.GET(strings.Join([]string{defaultPrefix, "/CurrentUser/Schedule"}, ""), service.GetUserSchedules)
+	protectedRoutes.POST("/ScheduleVersion/USZ/Lecturer/add", service.AddLecturerScheduleRevision)
 
-	router.GET(strings.Join([]string{defaultPrefix, "/CurrentUser/Schedule/:scheduleId/ScheduleVersions"}, ""), service.GetScheduleRevisions)
+	protectedRoutes.POST("/Note/add", service.AddNote)
 
-	router.DELETE(strings.Join([]string{defaultPrefix, "/CurrentUser/Schedule/:scheduleId/removeAssignment"}, ""), service.RemoveScheduleRevisionAssignment)
+	protectedRoutes.GET("/Class/:classId/Note", service.GetNote)
+
+	protectedRoutes.GET("/CurrentUser/Schedule", service.GetUserSchedules)
+
+	protectedRoutes.GET("/CurrentUser/Schedule/:scheduleId/ScheduleVersions", service.GetScheduleRevisions)
+
+	protectedRoutes.DELETE("/CurrentUser/Schedule/:scheduleId/removeAssignment", service.RemoveScheduleRevisionAssignment)
 
 	if err := router.Run(); err != nil {
 		panic(err)
